@@ -75,6 +75,13 @@ If you want to use LDAP auth backend without TLS then you will habe to create a
 custom-auth backend based on
 https://github.com/apache/incubator-airflow/blob/1.10.0/airflow/contrib/auth/backends/ldap_auth.py
 
+### Rename of BashTaskRunner to StandardTaskRunner
+
+BashTaskRunner has been renamed to StandardTaskRunner. It is the default task runner
+so you might need to update your config.
+
+`task_runner = StandardTaskRunner`
+
 ## Airflow 1.10
 
 Installation and upgrading requires setting `SLUGIFY_USES_TEXT_UNIDECODE=yes` in your environment or

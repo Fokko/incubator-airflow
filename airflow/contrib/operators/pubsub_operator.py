@@ -18,7 +18,7 @@
 # under the License.
 
 from airflow.contrib.hooks.gcp_pubsub_hook import PubSubHook
-from airflow.models import BaseOperator
+from airflow.operators.base_operator import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
 

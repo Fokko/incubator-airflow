@@ -20,7 +20,7 @@
 from builtins import str
 
 from airflow.utils.decorators import apply_defaults
-from airflow.models import BaseOperator
+from airflow.operators.base_operator import BaseOperator
 from airflow.exceptions import AirflowException
 import requests
 import json

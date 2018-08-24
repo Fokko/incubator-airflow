@@ -19,7 +19,7 @@
 import sys
 
 from airflow.exceptions import AirflowException
-from airflow.models import BaseOperator
+from airflow.operators.base_operator import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
 from airflow.contrib.hooks.aws_hook import AwsHook

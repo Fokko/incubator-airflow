@@ -20,7 +20,7 @@
 import sys
 
 from airflow.contrib.hooks.gcs_hook import GoogleCloudStorageHook
-from airflow.models import BaseOperator
+from airflow.operators.base_operator import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
 

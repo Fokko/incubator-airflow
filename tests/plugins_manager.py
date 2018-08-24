@@ -22,16 +22,13 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import inspect
-import logging
 import unittest
 
 from flask.blueprints import Blueprint
-from flask_admin import BaseView
 from flask_admin.menu import MenuLink, MenuView
 
 from airflow.hooks.base_hook import BaseHook
-from airflow.models import  BaseOperator
+from airflow.operators.base_operator import BaseOperator
 from airflow.sensors.base_sensor_operator import BaseSensorOperator
 from airflow.executors.base_executor import BaseExecutor
 from airflow.www.app import cached_app

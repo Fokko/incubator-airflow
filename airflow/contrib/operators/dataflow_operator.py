@@ -23,7 +23,7 @@ import copy
 
 from airflow.contrib.hooks.gcs_hook import GoogleCloudStorageHook
 from airflow.contrib.hooks.gcp_dataflow_hook import DataFlowHook
-from airflow.models import BaseOperator
+from airflow.operators.base_operator import BaseOperator
 from airflow.version import version
 from airflow.utils.decorators import apply_defaults
 

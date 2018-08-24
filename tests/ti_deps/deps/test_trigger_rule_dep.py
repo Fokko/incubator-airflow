@@ -20,7 +20,8 @@
 import unittest
 from datetime import datetime
 
-from airflow.models import BaseOperator, TaskInstance
+from airflow.models import TaskInstance
+from airflow.operators.base_operator import BaseOperator
 from airflow.utils.trigger_rule import TriggerRule
 from airflow.ti_deps.deps.trigger_rule_dep import TriggerRuleDep
 from airflow.utils.state import State

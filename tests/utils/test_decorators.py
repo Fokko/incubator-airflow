@@ -22,7 +22,7 @@ from airflow.utils.decorators import apply_defaults
 from airflow.exceptions import AirflowException
 
 
-# Essentially similar to airflow.models.BaseOperator
+# Essentially similar to airflow.operators.base_operator.BaseOperator
 class DummyClass(object):
     @apply_defaults
     def __init__(self, test_param, params=None, default_args=None):

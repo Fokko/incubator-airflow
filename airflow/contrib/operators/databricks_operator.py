@@ -23,7 +23,7 @@ import time
 
 from airflow.exceptions import AirflowException
 from airflow.contrib.hooks.databricks_hook import DatabricksHook
-from airflow.models import BaseOperator
+from airflow.operators.base_operator import BaseOperator
 
 
 XCOM_RUN_ID_KEY = 'run_id'

@@ -23,7 +23,7 @@ from select import select
 from airflow import configuration
 from airflow.contrib.hooks.ssh_hook import SSHHook
 from airflow.exceptions import AirflowException
-from airflow.models import BaseOperator
+from airflow.operators.base_operator import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
 

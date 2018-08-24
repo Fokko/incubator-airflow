@@ -22,7 +22,8 @@ from time import sleep
 
 from airflow.exceptions import AirflowException, AirflowSensorTimeout, \
     AirflowSkipException
-from airflow.operators.base_operator import BaseOperator, SkipMixin
+from airflow.models import SkipMixin
+from airflow.operators.base_operator import BaseOperator
 from airflow.utils import timezone
 from airflow.utils.decorators import apply_defaults
 

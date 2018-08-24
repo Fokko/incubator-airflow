@@ -17,9 +17,10 @@
 # specific language governing permissions and limitations
 # under the License.
 
+from airflow.models import Pool
 from airflow.exceptions import AirflowException
 from airflow.executors.sequential_executor import SequentialExecutor
-from airflow.operators.base_operator import BaseOperator, Pool
+from airflow.operators.base_operator import BaseOperator
 from airflow.utils.decorators import apply_defaults
 from airflow.utils.db import provide_session
 

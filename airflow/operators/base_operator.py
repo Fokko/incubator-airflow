@@ -31,8 +31,7 @@ import numbers
 import six
 import sys
 import warnings
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from airflow import configuration
 from airflow.models import (

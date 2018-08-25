@@ -3096,8 +3096,7 @@ class DAG(BaseDag, LoggingMixin):
 
     @provide_session
     def pickle_info(self, session=None):
-        d = {}
-        d['is_picklable'] = True
+        d = {'is_picklable': True}
         try:
             dttm = timezone.utcnow()
             pickled = pickle.dumps(self)
@@ -3187,16 +3186,6 @@ class DAG(BaseDag, LoggingMixin):
         """
         for task in tasks:
             self.add_task(task)
-
-    @provide_session
-    def db_merge(self, session=None):
-        BO = BaseOperator
-        tasks = session.query(BO).filter(BO.dag_id == self.dag_id).all()
-        for t in tasks:
-            session.delete(t)
-        session.commit()
-        session.merge(self)
-        session.commit()
 
     def run(
             self,

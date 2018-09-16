@@ -310,11 +310,6 @@ class BaseOperator(LoggingMixin):
         if not TriggerRule.is_valid(trigger_rule):
             raise AirflowException(
                 "The trigger_rule must be one of {all_triggers},"
-<<<<<<< HEAD
-                "'{d}.{t}'; received '{tr}'."
-                .format(all_triggers=TriggerRule.all_triggers,
-                        d=dag.dag_id if dag else "", t=task_id, tr=trigger_rule))
-=======
                 "'{d}.{t}'; received '{tr}'.".format(
                     all_triggers=TriggerRule.all_triggers,
                     d=dag.dag_id if dag else "",
@@ -322,7 +317,6 @@ class BaseOperator(LoggingMixin):
                     tr=trigger_rule,
                 )
             )
->>>>>>> Fixed formatting
 
         self.trigger_rule = trigger_rule
         self.depends_on_past = depends_on_past
@@ -359,11 +353,6 @@ class BaseOperator(LoggingMixin):
         if not WeightRule.is_valid(weight_rule):
             raise AirflowException(
                 "The weight_rule must be one of {all_weight_rules},"
-<<<<<<< HEAD
-                "'{d}.{t}'; received '{tr}'."
-                .format(all_weight_rules=WeightRule.all_weight_rules,
-                        d=dag.dag_id if dag else "", t=task_id, tr=weight_rule))
-=======
                 "'{d}.{t}'; received '{tr}'.".format(
                     all_weight_rules=WeightRule.all_weight_rules,
                     d=dag.dag_id if dag else "",
@@ -371,7 +360,7 @@ class BaseOperator(LoggingMixin):
                     tr=weight_rule,
                 )
             )
->>>>>>> Fixed formatting
+
         self.weight_rule = weight_rule
 
         self.resources = Resources(**(resources or {}))
@@ -684,15 +673,9 @@ class BaseOperator(LoggingMixin):
         )
 
         exts = self.__class__.template_ext
-<<<<<<< HEAD
         if (
                 isinstance(content, six.string_types) and
                 any([content.endswith(ext) for ext in exts])):
-=======
-        if isinstance(content, six.string_types) and any(
-            [content.endswith(ext) for ext in exts]
-        ):
->>>>>>> Fixed formatting
             return jinja_env.get_template(content).render(**context)
         else:
             return self.render_template_from_field(attr, content, context, jinja_env)
@@ -710,17 +693,9 @@ class BaseOperator(LoggingMixin):
         # Getting the content of files for template_field / template_ext
         for attr in self.template_fields:
             content = getattr(self, attr)
-<<<<<<< HEAD
             if content is not None and \
                     isinstance(content, six.string_types) and \
                     any([content.endswith(ext) for ext in self.template_ext]):
-=======
-            if (
-                content is not None
-                and isinstance(content, six.string_types)
-                and any([content.endswith(ext) for ext in self.template_ext])
-            ):
->>>>>>> Fixed formatting
                 env = self.dag.get_template_env()
                 try:
                     setattr(self, attr, env.loader.get_source(env, content)[0])
@@ -833,22 +808,12 @@ class BaseOperator(LoggingMixin):
         )
 
     def run(
-<<<<<<< HEAD
             self,
             start_date=None,
             end_date=None,
             ignore_first_depends_on_past=False,
             ignore_ti_state=False,
             mark_success=False):
-=======
-        self,
-        start_date=None,
-        end_date=None,
-        ignore_first_depends_on_past=False,
-        ignore_ti_state=False,
-        mark_success=False,
-    ):
->>>>>>> Fixed formatting
         """
         Run a set of task instances for a date range.
         """
@@ -965,38 +930,24 @@ class BaseOperator(LoggingMixin):
         """
         self._set_relatives(task_or_task_list, upstream=True)
 
-<<<<<<< HEAD
     def xcom_push(
             self,
             context,
             key,
             value,
             execution_date=None):
-=======
-    def xcom_push(self, context, key, value, execution_date=None):
->>>>>>> Fixed formatting
         """
         See TaskInstance.xcom_push()
         """
         context["ti"].xcom_push(key=key, value=value, execution_date=execution_date)
 
     def xcom_pull(
-<<<<<<< HEAD
             self,
             context,
             task_ids=None,
             dag_id=None,
             key=XCOM_RETURN_KEY,
             include_prior_dates=None):
-=======
-        self,
-        context,
-        task_ids=None,
-        dag_id=None,
-        key=XCOM_RETURN_KEY,
-        include_prior_dates=None,
-    ):
->>>>>>> Fixed formatting
         """
         See TaskInstance.xcom_pull()
         """

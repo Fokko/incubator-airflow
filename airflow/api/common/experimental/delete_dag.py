@@ -19,13 +19,13 @@
 
 from sqlalchemy import or_
 
-from airflow import models, settings
+from airflow import models
+from airflow.utils.db import provide_session
 from airflow.exceptions import DagNotFound, DagFileExists
 
 
-def delete_dag(dag_id):
-    session = settings.Session()
-
+@provide_session
+def delete_dag(dag_id, session=None):
     DM = models.DagModel
     dag = session.query(DM).filter(DM.dag_id == dag_id).first()
     if dag is None:
@@ -37,8 +37,6 @@ def delete_dag(dag_id):
                             "Remove the DAG file first.".format(dag_id))
 
     count = 0
-
-    # noinspection PyUnresolvedReferences,PyProtectedMember
     for m in models.Base._decl_class_registry.values():
         if hasattr(m, "dag_id"):
             cond = or_(m.dag_id == dag_id, m.dag_id.like(dag_id + ".%"))
@@ -48,7 +46,5 @@ def delete_dag(dag_id):
         p, c = dag_id.rsplit(".", 1)
         for m in models.DagRun, models.TaskFail, models.TaskInstance:
             count += session.query(m).filter(m.dag_id == p, m.task_id == c).delete()
-
-    session.commit()
 
     return count

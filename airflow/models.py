@@ -92,7 +92,7 @@ from airflow.ti_deps.dep_context import DepContext, QUEUE_DEPS, RUN_DEPS
 from airflow.utils import timezone
 from airflow.utils.dag_processing import list_py_file_paths
 from airflow.utils.dates import cron_presets, date_range as utils_date_range
-from airflow.utils.db import provide_session
+from airflow.utils.db import provide_session, create_session
 from airflow.utils.decorators import apply_defaults
 from airflow.utils.email import send_email
 from airflow.utils.helpers import (
@@ -5054,11 +5054,8 @@ class DagRun(Base, LoggingMixin):
             self.end_date = timezone.utcnow() if self._state in State.finished() else None
 
             if self.dag_id is not None:
-                # FIXME: Due to the scoped_session factor we we don't get a clean
-                # session here, so something really weird goes on:
-                # if you try to close the session dag runs will end up detached
-                session = settings.Session()
-                DagStat.set_dirty(self.dag_id, session=session)
+                with create_session() as session:
+                    DagStat.set_dirty(self.dag_id, session=session)
 
     @declared_attr
     def state(self):

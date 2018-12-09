@@ -71,6 +71,13 @@ class TestMarkTasks(unittest.TestCase):
         self.session.commit()
         self.session.close()
 
+        TestMarkTasks.check_open_connections()
+
+    @staticmethod
+    def check_open_connections():
+        from airflow.settings import engine
+        assert engine.pool.checkedout() == 0
+
     def snapshot_state(self, dag, execution_dates):
         TI = models.TaskInstance
         tis = self.session.query(TI).filter(

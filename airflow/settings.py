@@ -194,8 +194,7 @@ def configure_orm(disable_connection_pool=False):
     Session = scoped_session(
         sessionmaker(autocommit=False,
                      autoflush=False,
-                     bind=engine,
-                     expire_on_commit=False))
+                     bind=engine))
 
 
 def dispose_orm():

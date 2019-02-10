@@ -933,7 +933,8 @@ class SchedulerJob(BaseJob):
             # this needs a fresh session sometimes tis get detached
             tis = run.get_task_instances(state=(State.NONE,
                                                 State.UP_FOR_RETRY,
-                                                State.UP_FOR_RESCHEDULE))
+                                                State.UP_FOR_RESCHEDULE),
+                                         session=session)
 
             # this loop is quite slow as it uses are_dependencies_met for
             # every task (in ti.is_runnable). This is also called in
@@ -2457,7 +2458,7 @@ class BackfillJob(BaseJob):
                     self.log.info(
                         "max_active_runs limit for dag %s has been reached "
                         " - waiting for other dag runs to finish",
-                        self.dag_id
+                        self.dag.dag_id
                     )
                     time.sleep(self.delay_on_limit_secs)
         finally:

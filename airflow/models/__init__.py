@@ -96,7 +96,7 @@ from airflow.ti_deps.dep_context import DepContext, QUEUE_DEPS, RUN_DEPS
 from airflow.utils import timezone
 from airflow.utils.dag_processing import list_py_file_paths
 from airflow.utils.dates import cron_presets, date_range as utils_date_range
-from airflow.utils.db import provide_session
+from airflow.utils.db import create_session, provide_session
 from airflow.utils.decorators import apply_defaults
 from airflow.utils.email import send_email
 from airflow.utils.helpers import is_container, validate_key, pprinttable
@@ -317,30 +317,32 @@ class DagBag(BaseDagBag, LoggingMixin):
         Gets the DAG out of the dictionary, and refreshes it if expired
         """
         # If asking for a known subdag, we want to refresh the parent
+        dag = None
         root_dag_id = dag_id
         if dag_id in self.dags:
             dag = self.dags[dag_id]
             if dag.is_subdag:
                 root_dag_id = dag.parent_dag.dag_id
 
-        # If the dag corresponding to root_dag_id is absent or expired
-        orm_dag = DagModel.get_current(root_dag_id)
-        if orm_dag and (
-                root_dag_id not in self.dags or
-                (
-                    orm_dag.last_expired and
-                    dag.last_loaded < orm_dag.last_expired
-                )
-        ):
-            # Reprocess source file
-            found_dags = self.process_file(
-                filepath=orm_dag.fileloc, only_if_updated=False)
+        with create_session() as session:
+            # If the dag corresponding to root_dag_id is absent or expired
+            orm_dag = DagModel.get_current(root_dag_id, session)
+            if orm_dag and (
+                    root_dag_id not in self.dags or
+                    (
+                        orm_dag.last_expired and
+                        dag.last_loaded < orm_dag.last_expired
+                    )
+            ):
+                # Reprocess source file
+                found_dags = self.process_file(
+                    filepath=orm_dag.fileloc, only_if_updated=False)
 
-            # If the source file no longer exports `dag_id`, delete it from self.dags
-            if found_dags and dag_id in [found_dag.dag_id for found_dag in found_dags]:
-                return self.dags[dag_id]
-            elif dag_id in self.dags:
-                del self.dags[dag_id]
+                # If the source file no longer exports `dag_id`, delete it from self.dags
+                if found_dags and dag_id in [found_dag.dag_id for found_dag in found_dags]:
+                    return self.dags[dag_id]
+                elif dag_id in self.dags:
+                    del self.dags[dag_id]
         return self.dags.get(dag_id)
 
     def process_file(self, filepath, only_if_updated=True, safe_mode=True):

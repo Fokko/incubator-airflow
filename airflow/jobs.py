@@ -196,7 +196,8 @@ class BaseJob(Base, LoggingMixin):
         with create_session() as session:
             self.state = State.RUNNING
             session.add(self)
-            session.commit()
+
+        with create_session() as session:
             id_ = self.id
             make_transient(self)
             self.id = id_
@@ -214,7 +215,6 @@ class BaseJob(Base, LoggingMixin):
             finally:
                 self.end_date = timezone.utcnow()
                 session.merge(self)
-                session.commit()
 
         Stats.incr(self.__class__.__name__.lower() + '_end', 1, 1)
 
@@ -1718,7 +1718,7 @@ class SchedulerJob(BaseJob):
 
         # Pickle the DAGs (if necessary) and put them into a SimpleDag
         for dag_id in dagbag.dags:
-            dag = dagbag.get_dag(dag_id, session)
+            dag = dagbag.get_dag(dag_id)
             pickle_id = None
             if pickle_dags:
                 pickle_id = dag.pickle(session).id

@@ -3195,11 +3195,13 @@ class ClearTasksTest(unittest.TestCase):
                  task_id=task_id2,
                  execution_date=execution_date)
 
-        results = XCom.get_many(key=key,
-                                execution_date=execution_date)
+        with create_session() as session:
+            results = XCom.get_many(key=key,
+                                    execution_date=execution_date,
+                                    session=session)
 
-        for result in results:
-            self.assertEqual(result.value, json_obj)
+            for result in results:
+                self.assertEqual(result.value, json_obj)
 
 
 class VariableTest(unittest.TestCase):

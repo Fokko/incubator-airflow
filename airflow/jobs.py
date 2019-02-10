@@ -162,21 +162,20 @@ class BaseJob(Base, LoggingMixin):
             with create_session() as session:
                 job = session.query(BaseJob).filter_by(id=self.id).one()
 
-            if job.state == State.SHUTDOWN:
-                self.kill()
+                if job.state == State.SHUTDOWN:
+                    self.kill()
 
-            # Figure out how long to sleep for
-            sleep_for = 0
-            if job.latest_heartbeat:
-                sleep_for = max(
-                    0,
-                    self.heartrate - (timezone.utcnow() -
-                                      job.latest_heartbeat).total_seconds())
+                # Figure out how long to sleep for
+                sleep_for = 0
+                if job.latest_heartbeat:
+                    sleep_for = max(
+                        0,
+                        self.heartrate - (timezone.utcnow() -
+                                          job.latest_heartbeat).total_seconds())
 
-            sleep(sleep_for)
+                sleep(sleep_for)
 
-            # Update last heartbeat time
-            with create_session() as session:
+                # Update last heartbeat time
                 job = session.query(BaseJob).filter(BaseJob.id == self.id).first()
                 job.latest_heartbeat = timezone.utcnow()
                 session.merge(job)

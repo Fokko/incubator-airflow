@@ -37,7 +37,6 @@ import six
 from past.builtins import basestring
 from sqlalchemy import (Column, Index, Integer, String, and_, func, not_, or_)
 from sqlalchemy.exc import OperationalError
-from sqlalchemy.orm.session import make_transient
 
 from airflow import configuration as conf
 from airflow import executors, models, settings
@@ -162,8 +161,6 @@ class BaseJob(Base, LoggingMixin):
         try:
             with create_session() as session:
                 job = session.query(BaseJob).filter_by(id=self.id).one()
-                make_transient(job)
-                session.commit()
 
             if job.state == State.SHUTDOWN:
                 self.kill()
@@ -196,10 +193,7 @@ class BaseJob(Base, LoggingMixin):
         with create_session() as session:
             self.state = State.RUNNING
             session.add(self)
-
-        with create_session() as session:
             id_ = self.id
-            make_transient(self)
             self.id = id_
 
             try:
@@ -932,7 +926,6 @@ class SchedulerJob(BaseJob):
             run.verify_integrity(session=session)
             run.update_state(session=session)
             if run.state == State.RUNNING:
-                make_transient(run)
                 active_dag_runs.append(run)
 
         for run in active_dag_runs:
@@ -1213,7 +1206,6 @@ class SchedulerJob(BaseJob):
             copy_dag_id = ti.dag_id
             copy_execution_date = ti.execution_date
             copy_task_id = ti.task_id
-            make_transient(ti)
             ti.dag_id = copy_dag_id
             ti.execution_date = copy_execution_date
             ti.task_id = copy_task_id
@@ -2083,7 +2075,6 @@ class BackfillJob(BaseJob):
 
         # for some reason if we don't refresh the reference to run is lost
         dag_run.refresh_from_db()
-        make_transient(dag_run)
 
         # TODO(edgarRd): AIRFLOW-1464 change to batch query to improve perf
         for ti in dag_run.get_task_instances():

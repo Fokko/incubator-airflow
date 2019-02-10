@@ -1718,7 +1718,7 @@ class SchedulerJob(BaseJob):
 
         # Pickle the DAGs (if necessary) and put them into a SimpleDag
         for dag_id in dagbag.dags:
-            dag = dagbag.get_dag(dag_id)
+            dag = dagbag.get_dag(dag_id, session)
             pickle_id = None
             if pickle_dags:
                 pickle_id = dag.pickle(session).id

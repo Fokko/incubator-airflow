@@ -112,7 +112,6 @@ def _read_default_config_file(file_name):
 
 
 DEFAULT_CONFIG = _read_default_config_file('default_airflow.cfg')
-TEST_CONFIG = _read_default_config_file('default_test.cfg')
 
 
 class AirflowConfigParser(ConfigParser):
@@ -416,9 +415,10 @@ class AirflowConfigParser(ConfigParser):
         # override any custom settings with defaults
         self.read_string(parameterized_config(DEFAULT_CONFIG))
         # then read test config
+        TEST_CONFIG = _read_default_config_file('default_test.cfg')
         self.read_string(parameterized_config(TEST_CONFIG))
         # then read any "custom" test settings
-        self.read(TEST_CONFIG_FILE)
+        self.read(AIRFLOW_HOME + '/unittests.cfg')
 
     def _warn_deprecate(self, section, key, deprecated_name):
         warnings.warn(
@@ -493,10 +493,8 @@ def parameterized_config(template):
     return template.format(**all_vars)
 
 
-TEST_CONFIG_FILE = AIRFLOW_HOME + '/unittests.cfg'
-
 # only generate a Fernet key if we need to create a new config file
-if not os.path.isfile(TEST_CONFIG_FILE) or not os.path.isfile(AIRFLOW_CONFIG):
+if not os.path.isfile(AIRFLOW_CONFIG):
     FERNET_KEY = generate_fernet_key()
 else:
     FERNET_KEY = ''
@@ -505,13 +503,6 @@ SECRET_KEY = b64encode(os.urandom(16)).decode('utf-8')
 
 TEMPLATE_START = (
     '# ----------------------- TEMPLATE BEGINS HERE -----------------------')
-if not os.path.isfile(TEST_CONFIG_FILE):
-    log.info(
-        'Creating new Airflow config file for unit tests in: %s', TEST_CONFIG_FILE
-    )
-    with open(TEST_CONFIG_FILE, 'w') as f:
-        cfg = parameterized_config(TEST_CONFIG)
-        f.write(cfg.split(TEMPLATE_START)[-1].strip())
 if not os.path.isfile(AIRFLOW_CONFIG):
     log.info(
         'Creating new Airflow config file in: %s',
@@ -539,12 +530,7 @@ if not os.path.isfile(WEBSERVER_CONFIG):
     with open(WEBSERVER_CONFIG, 'w') as f:
         f.write(DEFAULT_WEBSERVER_CONFIG)
 
-if conf.getboolean('core', 'unit_test_mode'):
-    conf.load_test_config()
-
 # Historical convenience functions to access config entries
-
-load_test_config = conf.load_test_config
 get = conf.get
 getboolean = conf.getboolean
 getfloat = conf.getfloat
@@ -555,8 +541,7 @@ remove_option = conf.remove_option
 as_dict = conf.as_dict
 set = conf.set # noqa
 
-for func in [load_test_config, get, getboolean, getfloat, getint, has_option,
-             remove_option, as_dict, set]:
+for func in [get, getboolean, getfloat, getint, has_option, remove_option, as_dict, set]:
     deprecated(
         func,
         "Accessing configuration method '{f.__name__}' directly from "

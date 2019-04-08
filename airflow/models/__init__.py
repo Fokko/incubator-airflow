@@ -3098,7 +3098,6 @@ class DAG(BaseDag, LoggingMixin):
             'template_searchpath',
             'last_loaded',
         }
-
         self.sync_to_db()
 
     def __repr__(self):

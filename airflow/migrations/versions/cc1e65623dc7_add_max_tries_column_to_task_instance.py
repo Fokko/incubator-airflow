@@ -30,9 +30,10 @@ import sqlalchemy as sa
 from airflow import settings
 from airflow.models import DagBag
 
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, engine_from_config
 from sqlalchemy.engine.reflection import Inspector
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.engine import reflection
 
 # revision identifiers, used by Alembic.
 revision = 'cc1e65623dc7'
@@ -43,6 +44,19 @@ depends_on = None
 Base = declarative_base()
 BATCH_SIZE = 5000
 ID_LEN = 250
+
+
+def table_has_column(table, column):
+    config = op.get_context().config
+    engine = engine_from_config(
+        config.get_section(config.config_ini_section), prefix='sqlalchemy.')
+    insp = reflection.Inspector.from_engine(engine)
+    has_column = False
+    for col in insp.get_columns(table):
+        if column not in col['name']:
+            continue
+        has_column = True
+    return has_column
 
 
 class TaskInstance(Base):
@@ -61,6 +75,11 @@ def upgrade():
     # needed for database that does not create table until migration finishes.
     # Checking task_instance table exists prevent the error of querying
     # non-existing task_instance table.
+
+    op.add_column('dag', sa.Column('description', sa.Text(), nullable=True))
+    op.add_column('dag', sa.Column('default_view', sa.String(25), nullable=True))
+    op.add_column('dag', sa.Column('schedule_interval', sa.Text(), nullable=True))
+
     connection = op.get_bind()
     inspector = Inspector.from_engine(connection)
     tables = inspector.get_table_names()
@@ -99,6 +118,11 @@ def upgrade():
             session.commit()
         # Commit the current session.
         session.commit()
+
+    with op.batch_alter_table('dag') as batch_op:
+        batch_op.drop_column('description')
+        batch_op.drop_column('default_view')
+        batch_op.drop_column('schedule_interval')
 
 
 def downgrade():

@@ -25,7 +25,6 @@ Create Date: 2019-04-10 19:25:58.540765
 """
 
 from alembic import op
-import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "2175415ab535"
@@ -63,6 +62,7 @@ def upgrade():
             ["id"],
             ondelete="CASCADE",
         )
+
 
 def downgrade():
     op.drop_constraint(None, "xcom_dag_id__dag_dag_id__fk", type_="foreignkey")

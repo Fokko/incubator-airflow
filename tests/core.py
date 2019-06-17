@@ -329,9 +329,6 @@ class CoreTest(unittest.TestCase):
 
         self.assertIsNone(additional_dag_run)
 
-    def test_confirm_unittest_mod(self):
-        self.assertTrue(configuration.conf.get('core', 'unit_test_mode'))
-
     def test_pickling(self):
         dp = self.dag.pickle()
         self.assertEqual(dp.pickle.dag_id, self.dag.dag_id)

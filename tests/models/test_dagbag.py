@@ -600,8 +600,7 @@ class DagBagTest(unittest.TestCase):
 
         self.assertEqual([], dagbag.process_file(None))
 
-    @patch.object(TI, 'handle_failure')
-    def test_kill_zombies(self, mock_ti_handle_failure):
+    def test_kill_zombies(self):
         """
         Test that kill zombies call TIs failure handler with proper context
         """
@@ -618,11 +617,6 @@ class DagBagTest(unittest.TestCase):
 
             zombies = [SimpleTaskInstance(ti)]
             dagbag.kill_zombies(zombies)
-            mock_ti_handle_failure \
-                .assert_called_with(ANY,
-                                    configuration.getboolean('core',
-                                                             'unit_test_mode'),
-                                    ANY)
 
     def test_deactivate_unknown_dags(self):
         """

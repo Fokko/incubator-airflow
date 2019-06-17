@@ -1398,16 +1398,14 @@ class SchedulerJob(BaseJob):
                 self.heartbeat()
                 last_self_heartbeat_time = timezone.utcnow()
 
-            is_unit_test = conf.getboolean('core', 'unit_test_mode')
             loop_end_time = time.time()
             loop_duration = loop_end_time - loop_start_time
             self.log.debug(
                 "Ran scheduling loop in %.2f seconds",
                 loop_duration)
 
-            if not is_unit_test:
-                self.log.debug("Sleeping for %.2f seconds", self._processor_poll_interval)
-                time.sleep(self._processor_poll_interval)
+            self.log.debug("Sleeping for %.2f seconds", self._processor_poll_interval)
+            time.sleep(self._processor_poll_interval)
 
             # Exit early for a test mode, run one additional scheduler loop
             # to reduce the possibility that parsed DAG was put into the queue

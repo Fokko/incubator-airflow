@@ -886,7 +886,7 @@ def webserver(args):
         print(
             "Starting the web server on port {0} and host {1}.".format(
                 args.port, args.hostname))
-        app, _ = create_app(None, testing=conf.get('core', 'unit_test_mode'))
+        app, _ = create_app(None)
         app.run(debug=True, use_reloader=False if app.config['TESTING'] else True,
                 port=args.port, host=args.hostname,
                 ssl_context=(ssl_cert, ssl_key) if ssl_cert and ssl_key else None)

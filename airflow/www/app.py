@@ -42,7 +42,7 @@ csrf = CSRFProtect()
 log = logging.getLogger(__name__)
 
 
-def create_app(config=None, session=None, testing=False, app_name="Airflow"):
+def create_app(config=None, session=None, app_name="Airflow"):
     global app, appbuilder
     app = Flask(__name__)
     if conf.getboolean('webserver', 'ENABLE_PROXY_FIX'):
@@ -51,7 +51,6 @@ def create_app(config=None, session=None, testing=False, app_name="Airflow"):
 
     app.config.from_pyfile(settings.WEBSERVER_CONFIG, silent=True)
     app.config['APP_NAME'] = app_name
-    app.config['TESTING'] = testing
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     app.config['SESSION_COOKIE_HTTPONLY'] = True
@@ -186,12 +185,6 @@ def create_app(config=None, session=None, testing=False, app_name="Airflow"):
         security_manager.sync_roles()
 
         from airflow.www.api.experimental import endpoints as e
-        # required for testing purposes otherwise the module retains
-        # a link to the default_auth
-        if app.config['TESTING']:
-            import importlib
-            importlib.reload(e)
-
         app.register_blueprint(e.api_experimental, url_prefix='/api/experimental')
 
         @app.context_processor
@@ -213,19 +206,19 @@ def root_app(env, resp):
     return [b'Apache Airflow is not at this location']
 
 
-def cached_app(config=None, session=None, testing=False):
+def cached_app(config=None, session=None):
     global app, appbuilder
     if not app or not appbuilder:
         base_url = urlparse(conf.get('webserver', 'base_url'))[2]
         if not base_url or base_url == '/':
             base_url = ""
 
-        app, _ = create_app(config, session, testing)
+        app, _ = create_app(config, session)
         app = DispatcherMiddleware(root_app, {base_url: app})
     return app
 
 
-def cached_appbuilder(config=None, testing=False):
+def cached_appbuilder(config=None):
     global appbuilder
-    cached_app(config=config, testing=testing)
+    cached_app(config=config)
     return appbuilder

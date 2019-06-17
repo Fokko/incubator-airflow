@@ -97,9 +97,6 @@ class ConfTest(unittest.TestCase):
     def test_conf_as_dict(self):
         cfg_dict = conf.as_dict()
 
-        # test that configs are picked up
-        self.assertEqual(cfg_dict['core']['unit_test_mode'], 'True')
-
         self.assertEqual(cfg_dict['core']['percent'], 'with%inside')
 
         # test env vars

@@ -47,8 +47,6 @@ class RetrieveVariables:
     @run_once
     def retrieve_variables():
         if os.path.isfile(ENV_FILE_RETRIEVER):
-            if os.environ.get('AIRFLOW__CORE__UNIT_TEST_MODE'):
-                raise Exception("Please unset the AIRFLOW__CORE__UNIT_TEST_MODE")
             variables = subprocess.check_output([ENV_FILE_RETRIEVER]).decode("utf-8")
             print("Applying variables retrieved")
             for line in variables.split("\n"):

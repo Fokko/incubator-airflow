@@ -393,8 +393,6 @@ class AirflowConfigParser(ConfigParser):
                     opt = self._get_env_var_option(section, key)
                 except ValueError:
                     continue
-                if not display_sensitive and ev != 'AIRFLOW__CORE__UNIT_TEST_MODE':
-                    opt = '< hidden >'
                 elif raw:
                     opt = opt.replace('%', '%%')
                 if display_source:
@@ -556,9 +554,6 @@ if not os.path.isfile(WEBSERVER_CONFIG):
     DEFAULT_WEBSERVER_CONFIG = _read_default_config_file('default_webserver_config.py')
     with open(WEBSERVER_CONFIG, 'w') as f:
         f.write(DEFAULT_WEBSERVER_CONFIG)
-
-if conf.getboolean('core', 'unit_test_mode'):
-    conf.load_test_config()
 
 # Historical convenience functions to access config entries
 

@@ -44,7 +44,6 @@ echo Backend: $AIRFLOW__CORE__SQL_ALCHEMY_CONN
 
 # environment
 export AIRFLOW_HOME=${AIRFLOW_HOME:=~}
-export AIRFLOW__CORE__UNIT_TEST_MODE=True
 
 # any argument received is overriding the default nose execution arguments:
 nose_args=$@

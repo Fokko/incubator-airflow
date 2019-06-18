@@ -393,7 +393,7 @@ class AirflowConfigParser(ConfigParser):
                     opt = self._get_env_var_option(section, key)
                 except ValueError:
                     continue
-                elif raw:
+                if raw:
                     opt = opt.replace('%', '%%')
                 if display_source:
                     opt = (opt, 'env var')

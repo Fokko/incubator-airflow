@@ -1418,7 +1418,7 @@ class SchedulerJob(BaseJob):
                               " have been processed {} times".format(self.num_runs))
                 break
 
-            if loop_duration < 1 and not is_unit_test:
+            if loop_duration < 1:
                 sleep_length = 1 - loop_duration
                 self.log.debug(
                     "Sleeping for {0:.2f} seconds to prevent excessive logging"

@@ -25,9 +25,9 @@ import textwrap
 import unittest
 from tempfile import mkdtemp, NamedTemporaryFile
 
-from unittest.mock import patch, ANY
+from unittest.mock import patch
 
-from airflow import models, configuration
+from airflow import models
 from airflow.models import DagModel, DagBag, TaskInstance as TI
 from airflow.utils.dag_processing import SimpleTaskInstance
 from airflow.utils.db import create_session

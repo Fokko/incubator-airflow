@@ -548,10 +548,13 @@ class CoreTest(unittest.TestCase):
         t.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
 
     def test_timeout(self):
+        def test_py_op(**context):
+            sleep(1)
+
         t = PythonOperator(
             task_id='test_timeout',
             execution_timeout=timedelta(seconds=1),
-            python_callable=lambda: sleep(5),
+            python_callable=lambda context: sleep(1),
             dag=self.dag)
         self.assertRaises(
             exceptions.AirflowTaskTimeout,
@@ -559,13 +562,12 @@ class CoreTest(unittest.TestCase):
             start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
 
     def test_python_op(self):
-        def test_py_op(templates_dict, ds, **kwargs):
+        def test_py_op(templates_dict, ds, **context):
             if not templates_dict['ds'] == ds:
                 raise Exception("failure")
 
         t = PythonOperator(
             task_id='test_py_op',
-            provide_context=True,
             python_callable=test_py_op,
             templates_dict={'ds': "{{ ds }}"},
             dag=self.dag)

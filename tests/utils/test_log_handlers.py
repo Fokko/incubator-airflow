@@ -65,14 +65,13 @@ class TestFileTaskLogHandler(unittest.TestCase):
         self.assertEqual(handler.name, FILE_TASK_HANDLER)
 
     def test_file_task_handler(self):
-        def task_callable(ti, **kwargs):
+        def task_callable(ti, **context):
             ti.log.info("test")
         dag = DAG('dag_for_testing_file_task_handler', start_date=DEFAULT_DATE)
         task = PythonOperator(
             task_id='task_for_testing_file_log_handler',
             dag=dag,
             python_callable=task_callable,
-            provide_context=True
         )
         ti = TaskInstance(task=task, execution_date=DEFAULT_DATE)
 
@@ -118,14 +117,13 @@ class TestFileTaskLogHandler(unittest.TestCase):
         os.remove(log_filename)
 
     def test_file_task_handler_running(self):
-        def task_callable(ti, **kwargs):
+        def task_callable(ti, **context):
             ti.log.info("test")
         dag = DAG('dag_for_testing_file_task_handler', start_date=DEFAULT_DATE)
         task = PythonOperator(
             task_id='task_for_testing_file_log_handler',
             dag=dag,
-            python_callable=task_callable,
-            provide_context=True
+            python_callable=task_callable
         )
         ti = TaskInstance(task=task, execution_date=DEFAULT_DATE)
         ti.try_number = 2

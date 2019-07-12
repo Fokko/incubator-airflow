@@ -75,7 +75,6 @@ def grabArtifactFromJenkins(**context):
 
 artifact_grabber = PythonOperator(
     task_id='artifact_grabber',
-    provide_context=True,
     python_callable=grabArtifactFromJenkins,
     dag=dag)
 

@@ -38,12 +38,6 @@ class PythonSensor(BaseSensorOperator):
     :param op_args: a list of positional arguments that will get unpacked when
         calling your callable
     :type op_args: list
-    :param provide_context: if set to true, Airflow will pass a set of
-        keyword arguments that can be used in your function. This set of
-        kwargs correspond exactly to what you can use in your jinja
-        templates. For this to work, you need to define `**kwargs` in your
-        function header.
-    :type provide_context: bool
     :param templates_dict: a dictionary where the values are templates that
         will get templated by the Airflow engine sometime between
         ``__init__`` and ``execute`` takes place and are made available
@@ -59,21 +53,18 @@ class PythonSensor(BaseSensorOperator):
             python_callable,
             op_args=None,
             op_kwargs=None,
-            provide_context=False,
             templates_dict=None,
             *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.python_callable = python_callable
         self.op_args = op_args or []
         self.op_kwargs = op_kwargs or {}
-        self.provide_context = provide_context
         self.templates_dict = templates_dict
 
     def poke(self, context):
-        if self.provide_context:
-            context.update(self.op_kwargs)
-            context['templates_dict'] = self.templates_dict
-            self.op_kwargs = context
+        context.update(self.op_kwargs)
+        context['templates_dict'] = self.templates_dict
+        self.op_kwargs = context
 
         self.log.info("Poking callable: %s", str(self.python_callable))
         return_value = self.python_callable(*self.op_args, **self.op_kwargs)

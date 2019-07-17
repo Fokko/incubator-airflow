@@ -45,7 +45,7 @@ def a_function(arg_x, arg_y, **context):
 
 
 partial_function = functools.partial(a_function, arg_x=1)
-class_instance = CallableClass(**context)
+class_instance = CallableClass()
 
 logging.info('class_instance type: %s', type(class_instance))
 

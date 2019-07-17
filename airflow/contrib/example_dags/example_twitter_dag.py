@@ -40,19 +40,19 @@ from datetime import date, timedelta
 # --------------------------------------------------------------------------------
 
 
-def fetch_tweets(**context):
+def fn_fetch_tweets(**context):
     return None
 
 
-def clean_tweets(**context):
+def fn_clean_tweets(**context):
     return None
 
 
-def analyze_tweets(**context):
+def fn_analyze_tweets(**context):
     return None
 
 
-def transfer_to_db(**context):
+def fn_transfer_to_db(**context):
     return None
 
 
@@ -88,7 +88,7 @@ dag = DAG(
 
 fetch_tweets = PythonOperator(
     task_id='fetch_tweets',
-    python_callable=fetch_tweets,
+    python_callable=fn_fetch_tweets,
     dag=dag)
 
 # --------------------------------------------------------------------------------
@@ -98,7 +98,7 @@ fetch_tweets = PythonOperator(
 
 clean_tweets = PythonOperator(
     task_id='clean_tweets',
-    python_callable=clean_tweets,
+    python_callable=fn_clean_tweets,
     dag=dag)
 
 clean_tweets.set_upstream(fetch_tweets)
@@ -111,7 +111,7 @@ clean_tweets.set_upstream(fetch_tweets)
 
 analyze_tweets = PythonOperator(
     task_id='analyze_tweets',
-    python_callable=analyze_tweets,
+    python_callable=fn_analyze_tweets,
     dag=dag)
 
 analyze_tweets.set_upstream(clean_tweets)
@@ -124,7 +124,7 @@ analyze_tweets.set_upstream(clean_tweets)
 
 hive_to_mysql = PythonOperator(
     task_id='hive_to_mysql',
-    python_callable=transfer_to_db,
+    python_callable=fn_transfer_to_db,
     dag=dag)
 
 # --------------------------------------------------------------------------------

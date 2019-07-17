@@ -543,10 +543,10 @@ passed, then a corresponding list of XCom values is returned.
 .. code:: python
 
     # inside a PythonOperator called 'pushing_task'
-    def push_function():
+    def push_function(**context):
         return value
 
-    # inside another PythonOperator where provide_context=True
+    # inside another PythonOperator
     def pull_function(**context):
         value = context['task_instance'].xcom_pull(task_ids='pushing_task')
 

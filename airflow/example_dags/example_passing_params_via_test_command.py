@@ -58,7 +58,6 @@ my_templated_command = """
 
 run_this = PythonOperator(
     task_id='run_this',
-    provide_context=True,
     python_callable=my_py_command,
     params={"miff": "agg"},
     dag=dag,

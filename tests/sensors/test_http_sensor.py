@@ -96,9 +96,6 @@ class HttpSensorTests(unittest.TestCase):
 
     @patch("airflow.hooks.http_hook.requests.Session.send")
     def test_poke_context(self, mock_session_send):
-        """
-        test provide_context
-        """
         response = requests.Response()
         response.status_code = 200
         mock_session_send.return_value = response
@@ -117,7 +114,6 @@ class HttpSensorTests(unittest.TestCase):
             endpoint='',
             request_params={},
             response_check=resp_check,
-            provide_context=True,
             timeout=5,
             poke_interval=1,
             dag=self.dag)

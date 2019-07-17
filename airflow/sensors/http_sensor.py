@@ -31,13 +31,11 @@ class HttpSensor(BaseSensorOperator):
     HTTP Error codes other than 404 (like 403) or Connection Refused Error
     would fail the sensor itself directly (no more poking).
 
-
         def response_check(response, **context):
             # Can look at context['ti'] etc.
             return True
 
         HttpSensor(task_id='my_http_sensor', ..., response_check=response_check)
-
 
     :param http_conn_id: The connection to run the sensor against
     :type http_conn_id: str

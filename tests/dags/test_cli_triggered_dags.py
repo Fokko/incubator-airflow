@@ -30,11 +30,11 @@ default_args = dict(
     owner='airflow')
 
 
-def fail():
+def fail(**context):
     raise ValueError('Expected failure.')
 
 
-def success(ti=None, *args, **kwargs):
+def success(ti, **context):
     if ti.execution_date != DEFAULT_DATE + timedelta(days=1):
         fail()
     return

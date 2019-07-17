@@ -40,12 +40,12 @@ class CallableClass:
         """ A __call__ method """
 
 
-def a_function(arg_x, arg_y):
+def a_function(arg_x, arg_y, **context):
     """ A function with two args """
 
 
 partial_function = functools.partial(a_function, arg_x=1)
-class_instance = CallableClass()
+class_instance = CallableClass(**context)
 
 logging.info('class_instance type: %s', type(class_instance))
 

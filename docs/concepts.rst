@@ -244,7 +244,7 @@ We can put this all together to build a simple pipeline:
                 bash_command='echo "HELLO!"')
             >> PythonOperator(
                 task_id='python_1',
-                python_callable=lambda: print("GOODBYE!"))
+                python_callable=lambda **context: print("GOODBYE!"))
         )
 
 Bitshift can also be used with lists. For example:
@@ -547,8 +547,8 @@ passed, then a corresponding list of XCom values is returned.
         return value
 
     # inside another PythonOperator
-    def pull_function(**context):
-        value = context['task_instance'].xcom_pull(task_ids='pushing_task')
+    def pull_function(task_instance, **context):
+        value = task_instance.xcom_pull(task_ids='pushing_task')
 
 It is also possible to pull XCom directly in a template, here's an example
 of what this may look like:

@@ -34,7 +34,7 @@ dag = DAG(
 )
 
 
-def test_volume_mount():
+def test_volume_mount(**context):
     with open('/foo/volume_mount_test.txt', 'w') as foo:
         foo.write('Hello')
 

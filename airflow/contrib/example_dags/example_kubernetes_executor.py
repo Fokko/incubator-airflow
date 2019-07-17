@@ -58,11 +58,11 @@ tolerations = [{
 }]
 
 
-def print_stuff():
+def print_stuff(**context):
     print("stuff!")
 
 
-def use_zip_binary():
+def use_zip_binary(**context):
     rc = os.system("zip")
     assert rc == 0
 

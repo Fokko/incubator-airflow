@@ -33,13 +33,13 @@ dag = DAG(dag_id='example_short_circuit_operator', default_args=args)
 
 cond_true = ShortCircuitOperator(
     task_id='condition_is_True',
-    python_callable=lambda: True,
+    python_callable=lambda **context: True,
     dag=dag,
 )
 
 cond_false = ShortCircuitOperator(
     task_id='condition_is_False',
-    python_callable=lambda: False,
+    python_callable=lambda **context: False,
     dag=dag,
 )
 

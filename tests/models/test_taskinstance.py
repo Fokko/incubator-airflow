@@ -266,7 +266,7 @@ class TaskInstanceTest(unittest.TestCase):
         up in a SKIPPED state.
         """
 
-        def raise_skip_exception():
+        def raise_skip_exception(**context):
             raise AirflowSkipException
 
         dag = models.DAG(dag_id='test_run_pooling_task_with_skip')
@@ -456,7 +456,7 @@ class TaskInstanceTest(unittest.TestCase):
         done = False
         fail = False
 
-        def callable():
+        def callable(**context):
             if fail:
                 raise AirflowException()
             return done
@@ -761,7 +761,7 @@ class TaskInstanceTest(unittest.TestCase):
         task = PythonOperator(
             task_id=task_id,
             dag=dag,
-            python_callable=lambda: value,
+            python_callable=lambda **context: value,
             do_xcom_push=False,
             owner='airflow',
             start_date=datetime.datetime(2017, 1, 1)
@@ -793,7 +793,7 @@ class TaskInstanceTest(unittest.TestCase):
         task = TestOperator(
             task_id='test_operator',
             dag=dag,
-            python_callable=lambda: 'error',
+            python_callable=lambda **context: 'error',
             owner='airflow',
             start_date=timezone.datetime(2017, 2, 1))
         ti = TI(task=task, execution_date=timezone.utcnow())

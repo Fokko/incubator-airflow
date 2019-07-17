@@ -18,5 +18,5 @@
 # under the License.
 
 
-def print_stuff():
+def print_stuff(**context):
     print("annotated!")

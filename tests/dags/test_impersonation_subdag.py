@@ -37,7 +37,7 @@ default_args = {
 dag = DAG(dag_id='impersonation_subdag', default_args=default_args)
 
 
-def print_today():
+def print_today(**context):
     print('Today is {}'.format(datetime.utcnow()))
 
 

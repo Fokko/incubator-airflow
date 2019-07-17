@@ -223,8 +223,8 @@ def create_evaluate_ops(task_prefix,
         dag=dag)
     evaluate_summary.set_upstream(evaluate_prediction)
 
-    def apply_validate_fn(*args, **kwargs):
-        prediction_path = kwargs["templates_dict"]["prediction_path"]
+    def apply_validate_fn(**context):
+        prediction_path = context["templates_dict"]["prediction_path"]
         scheme, bucket, obj, _, _ = urlsplit(prediction_path)
         if scheme != "gs" or not bucket or not obj:
             raise ValueError("Wrong format prediction_path: %s",

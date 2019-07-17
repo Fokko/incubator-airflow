@@ -41,12 +41,12 @@ args = {
 dag = DAG(dag_id='impersonation_with_custom_pkg', default_args=args)
 
 
-def print_today():
+def print_today(**context):
     dt = FakeDatetime.utcnow()
     print('Today is {}'.format(dt.strftime('%Y-%m-%d')))
 
 
-def check_hive_conf():
+def check_hive_conf(**context):
     from airflow import configuration as conf
     assert conf.get('hive', 'default_hive_mapred_queue') == 'airflow'
 

@@ -39,9 +39,9 @@ dag = DAG(
 
 
 # [START howto_operator_python]
-def print_context(ds, **kwargs):
+def print_context(ds, **context):
     """Print the Airflow context and ds variable from the context."""
-    pprint(kwargs)
+    pprint(context)
     print(ds)
     return 'Whatever you return gets printed in the logs'
 
@@ -55,7 +55,7 @@ run_this = PythonOperator(
 
 
 # [START howto_operator_python_kwargs]
-def my_sleeping_function(random_base):
+def my_sleeping_function(random_base, **context):
     """This is a function that will run within the DAG execution"""
     time.sleep(random_base)
 

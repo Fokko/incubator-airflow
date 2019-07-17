@@ -99,7 +99,7 @@ options = ['hadoop_jar_cmd', 'presto_cmd', 'db_query', 'spark_cmd']
 
 branching = BranchPythonOperator(
     task_id='branching',
-    python_callable=lambda: random.choice(options),
+    python_callable=lambda **context: random.choice(options),
     dag=dag)
 branching.set_upstream(t3)
 

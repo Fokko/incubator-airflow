@@ -37,7 +37,7 @@ default_args = dict(
     owner='airflow')
 
 
-def fail():
+def fail(**context):
     raise ValueError('Expected failure.')
 
 

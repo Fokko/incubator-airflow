@@ -141,7 +141,7 @@ class DagRunTest(unittest.TestCase):
         dag_task1 = ShortCircuitOperator(
             task_id='test_short_circuit_false',
             dag=dag,
-            python_callable=lambda: False)
+            python_callable=lambda **context: False)
         dag_task2 = DummyOperator(
             task_id='test_state_skipped1',
             dag=dag)
@@ -485,7 +485,7 @@ class DagRunTest(unittest.TestCase):
         ShortCircuitOperator(
             task_id='test_short_circuit_false',
             dag=dag,
-            python_callable=lambda: False)
+            python_callable=lambda **context: False)
 
         session = settings.Session()
 

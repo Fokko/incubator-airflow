@@ -40,17 +40,17 @@ dag = DAG(
 )
 
 
-def should_run(**kwargs):
+def should_run(**context):
     """
     Determine which dummy_task should be run based on if the execution date minute is even or odd.
 
-    :param dict kwargs: Context
+    :param dict context: Context
     :return: Id of the task to run
     :rtype: str
     """
     print('------------- exec dttm = {} and minute = {}'.
-          format(kwargs['execution_date'], kwargs['execution_date'].minute))
-    if kwargs['execution_date'].minute % 2 == 0:
+          format(context['execution_date'], context['execution_date'].minute))
+    if context['execution_date'].minute % 2 == 0:
         return "dummy_task_1"
     else:
         return "dummy_task_2"

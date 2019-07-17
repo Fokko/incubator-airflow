@@ -59,7 +59,7 @@ class TestPythonVirtualenvOperator(unittest.TestCase):
         task.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE)
 
     def test_dill_warning(self):
-        def f():
+        def f(**context):
             pass
         with self.assertRaises(AirflowException):
             PythonVirtualenvOperator(
@@ -71,12 +71,12 @@ class TestPythonVirtualenvOperator(unittest.TestCase):
 
     def test_no_requirements(self):
         """Tests that the python callable is invoked on task run."""
-        def f():
+        def f(**context):
             pass
         self._run_as_operator(f)
 
     def test_no_system_site_packages(self):
-        def f():
+        def f(**context):
             try:
                 import funcsigs  # noqa: F401
             except ImportError:
@@ -85,7 +85,7 @@ class TestPythonVirtualenvOperator(unittest.TestCase):
         self._run_as_operator(f, system_site_packages=False, requirements=['dill'])
 
     def test_system_site_packages(self):
-        def f():
+        def f(**context):
             import funcsigs  # noqa: F401
         self._run_as_operator(f, requirements=['funcsigs'], system_site_packages=True)
 
@@ -93,7 +93,7 @@ class TestPythonVirtualenvOperator(unittest.TestCase):
         self.assertNotEqual(
             '0.4', funcsigs.__version__, 'Please update this string if this fails')
 
-        def f():
+        def f(**context):
             import funcsigs  # noqa: F401
             if funcsigs.__version__ != '0.4':
                 raise Exception
@@ -101,36 +101,36 @@ class TestPythonVirtualenvOperator(unittest.TestCase):
         self._run_as_operator(f, requirements=['funcsigs==0.4'])
 
     def test_unpinned_requirements(self):
-        def f():
+        def f(**context):
             import funcsigs  # noqa: F401
         self._run_as_operator(
             f, requirements=['funcsigs', 'dill'], system_site_packages=False)
 
     def test_range_requirements(self):
-        def f():
+        def f(**context):
             import funcsigs  # noqa: F401
         self._run_as_operator(
             f, requirements=['funcsigs>1.0', 'dill'], system_site_packages=False)
 
     def test_fail(self):
-        def f():
+        def f(**context):
             raise Exception
         with self.assertRaises(CalledProcessError):
             self._run_as_operator(f)
 
     def test_python_2(self):
-        def f():
+        def f(**context):
             {}.iteritems()
         self._run_as_operator(f, python_version=2, requirements=['dill'])
 
     def test_python_2_7(self):
-        def f():
+        def f(**context):
             {}.iteritems()
             return True
         self._run_as_operator(f, python_version='2.7', requirements=['dill'])
 
     def test_python_3(self):
-        def f():
+        def f(**context):
             import sys
             print(sys.version)
             try:
@@ -153,7 +153,7 @@ class TestPythonVirtualenvOperator(unittest.TestCase):
         else:
             version = 2
 
-        def f():
+        def f(**context):
             pass
 
         with self.assertRaises(AirflowException):
@@ -165,7 +165,7 @@ class TestPythonVirtualenvOperator(unittest.TestCase):
         self._run_as_operator(f, system_site_packages=False, use_dill=False, op_args=[4])
 
     def test_string_args(self):
-        def f():
+        def f(**context):
             global virtualenv_string_args
             print(virtualenv_string_args)
             if virtualenv_string_args[0] != virtualenv_string_args[2]:
@@ -182,23 +182,23 @@ class TestPythonVirtualenvOperator(unittest.TestCase):
         self._run_as_operator(f, op_args=[0, 1], op_kwargs={'c': True})
 
     def test_return_none(self):
-        def f():
+        def f(**context):
             return None
         self._run_as_operator(f)
 
     def test_lambda(self):
         with self.assertRaises(AirflowException):
             PythonVirtualenvOperator(
-                python_callable=lambda x: 4,
+                python_callable=lambda x, **context: 4,
                 task_id='task',
                 dag=self.dag)
 
     def test_nonimported_as_arg(self):
-        def f(a):
+        def f(**context):
             return None
         self._run_as_operator(f, op_args=[datetime.datetime.utcnow()])
 
     def test_context(self):
-        def f(**kwargs):
-            return kwargs['templates_dict']['ds']
+        def f(templates_dict, **context):
+            return templates_dict['ds']
         self._run_as_operator(f, templates_dict={'ds': '{{ ds }}'})

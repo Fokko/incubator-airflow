@@ -56,7 +56,7 @@ job_trigger = JenkinsJobTriggerOperator(
     jenkins_connection_id="your_jenkins_connection" #The connection must be configured first
     )
 
-def grabArtifactFromJenkins(**context):
+def grab_artifact_from_jenkins(**context):
     """
     Grab an artifact from the previous job
     The python-jenkins library doesn't expose a method for that
@@ -75,7 +75,7 @@ def grabArtifactFromJenkins(**context):
 
 artifact_grabber = PythonOperator(
     task_id='artifact_grabber',
-    python_callable=grabArtifactFromJenkins,
+    python_callable=grab_artifact_from_jenkins,
     dag=dag)
 
 artifact_grabber.set_upstream(job_trigger)

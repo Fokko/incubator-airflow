@@ -93,7 +93,7 @@ class PythonOperatorTest(unittest.TestCase):
             if var in os.environ:
                 del os.environ[var]
 
-    def do_run(self):
+    def do_run(self, **context):
         self.run = True
 
     def clear_run(self):
@@ -215,7 +215,7 @@ class PythonOperatorTest(unittest.TestCase):
         self.assertEqual(id(original_task.python_callable),
                          id(new_task.python_callable))
 
-    def _env_var_check_callback(self):
+    def _env_var_check_callback(self, **context):
         self.assertEqual('test_dag', os.environ['AIRFLOW_CTX_DAG_ID'])
         self.assertEqual('hive_in_python_op', os.environ['AIRFLOW_CTX_TASK_ID'])
         self.assertEqual(DEFAULT_DATE.isoformat(),
@@ -273,7 +273,7 @@ class BranchOperatorTest(unittest.TestCase):
         """This checks the defensive against non existent tasks in a dag run"""
         self.branch_op = BranchPythonOperator(task_id='make_choice',
                                               dag=self.dag,
-                                              python_callable=lambda: 'branch_1')
+                                              python_callable=lambda **context: 'branch_1')
         self.branch_1.set_upstream(self.branch_op)
         self.branch_2.set_upstream(self.branch_op)
         self.dag.clear()
@@ -301,7 +301,7 @@ class BranchOperatorTest(unittest.TestCase):
         """This checks if the BranchPythonOperator supports branching off to a list of tasks."""
         self.branch_op = BranchPythonOperator(task_id='make_choice',
                                               dag=self.dag,
-                                              python_callable=lambda: ['branch_1', 'branch_2'])
+                                              python_callable=lambda **context: ['branch_1', 'branch_2'])
         self.branch_1.set_upstream(self.branch_op)
         self.branch_2.set_upstream(self.branch_op)
         self.branch_3 = DummyOperator(task_id='branch_3', dag=self.dag)
@@ -332,7 +332,7 @@ class BranchOperatorTest(unittest.TestCase):
     def test_with_dag_run(self):
         self.branch_op = BranchPythonOperator(task_id='make_choice',
                                               dag=self.dag,
-                                              python_callable=lambda: 'branch_1')
+                                              python_callable=lambda **context: 'branch_1')
 
         self.branch_1.set_upstream(self.branch_op)
         self.branch_2.set_upstream(self.branch_op)
@@ -361,7 +361,7 @@ class BranchOperatorTest(unittest.TestCase):
     def test_with_skip_in_branch_downstream_dependencies(self):
         self.branch_op = BranchPythonOperator(task_id='make_choice',
                                               dag=self.dag,
-                                              python_callable=lambda: 'branch_1')
+                                              python_callable=lambda **context: 'branch_1')
 
         self.branch_op >> self.branch_1 >> self.branch_2
         self.branch_op >> self.branch_2
@@ -390,7 +390,7 @@ class BranchOperatorTest(unittest.TestCase):
     def test_with_skip_in_branch_downstream_dependencies2(self):
         self.branch_op = BranchPythonOperator(task_id='make_choice',
                                               dag=self.dag,
-                                              python_callable=lambda: 'branch_2')
+                                              python_callable=lambda **context: 'branch_2')
 
         self.branch_op >> self.branch_1 >> self.branch_2
         self.branch_op >> self.branch_2
@@ -444,7 +444,7 @@ class ShortCircuitOperatorTest(unittest.TestCase):
                   schedule_interval=INTERVAL)
         short_op = ShortCircuitOperator(task_id='make_choice',
                                         dag=dag,
-                                        python_callable=lambda: value)
+                                        python_callable=lambda **context: value)
         branch_1 = DummyOperator(task_id='branch_1', dag=dag)
         branch_1.set_upstream(short_op)
         branch_2 = DummyOperator(task_id='branch_2', dag=dag)
@@ -497,7 +497,7 @@ class ShortCircuitOperatorTest(unittest.TestCase):
                   schedule_interval=INTERVAL)
         short_op = ShortCircuitOperator(task_id='make_choice',
                                         dag=dag,
-                                        python_callable=lambda: value)
+                                        python_callable=lambda **context: value)
         branch_1 = DummyOperator(task_id='branch_1', dag=dag)
         branch_1.set_upstream(short_op)
         branch_2 = DummyOperator(task_id='branch_2', dag=dag)

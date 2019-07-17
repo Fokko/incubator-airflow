@@ -46,7 +46,7 @@ options = ['branch_a', 'branch_b', 'branch_c', 'branch_d']
 
 branching = BranchPythonOperator(
     task_id='branching',
-    python_callable=lambda: random.choice(options),
+    python_callable=lambda **context: random.choice(options),
     dag=dag,
 )
 run_this_first >> branching

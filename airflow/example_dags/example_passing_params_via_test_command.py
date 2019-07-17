@@ -37,17 +37,17 @@ dag = DAG(
 )
 
 
-def my_py_command(**kwargs):
+def my_py_command(**context):
     """
     Print out the "foo" param passed in via
     `airflow test example_passing_params_via_test_command run_this <date>
     -tp '{"foo":"bar"}'`
     """
-    if kwargs["test_mode"]:
+    if context["test_mode"]:
         print(" 'foo' was passed in via test={} command : kwargs[params][foo] \
-               = {}".format(kwargs["test_mode"], kwargs["params"]["foo"]))
+               = {}".format(context["test_mode"], context["params"]["foo"]))
     # Print out the value of "miff", passed in below via the Python Operator
-    print(" 'miff' was passed in via task params = {}".format(kwargs["params"]["miff"]))
+    print(" 'miff' was passed in via task params = {}".format(context["params"]["miff"]))
     return 1
 
 

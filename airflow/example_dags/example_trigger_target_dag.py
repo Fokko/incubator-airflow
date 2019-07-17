@@ -57,14 +57,14 @@ dag = DAG(
 )
 
 
-def run_this_func(**kwargs):
+def run_this_func(**context):
     """
     Print the payload "message" passed to the DagRun conf attribute.
 
-    :param dict kwargs: Context
+    :param dict context: Context
     """
     print("Remotely received value of {} for key=message".
-          format(kwargs['dag_run'].conf['message']))
+          format(context['dag_run'].conf['message']))
 
 
 run_this = PythonOperator(

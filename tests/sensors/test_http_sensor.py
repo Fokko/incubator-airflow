@@ -100,10 +100,9 @@ class HttpSensorTests(unittest.TestCase):
         response.status_code = 200
         mock_session_send.return_value = response
 
-        def resp_check(resp, execution_date, **_):
-            if context:
-                if execution_date == DEFAULT_DATE:
-                    return True
+        def resp_check(execution_date, **_):
+            if execution_date == DEFAULT_DATE:
+                return True
 
             raise AirflowException('AirflowException raised here!')
 

@@ -40,7 +40,7 @@ class CallableClass:
         """ A __call__ method """
 
 
-def a_function(arg_x, arg_y, **context):
+def a_function(**_):
     """ A function with two args """
 
 

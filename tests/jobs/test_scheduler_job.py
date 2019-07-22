@@ -1081,7 +1081,7 @@ class SchedulerJobTest(unittest.TestCase):
             dagrun_state,
             run_kwargs=None,
             advance_execution_date=False,
-            session=None):
+            session=None):  # pylint: disable=unused-argument
         """
         Helper for testing DagRun states with simple two-task DAGS.
         This is hackish: a dag run is created but its tasks are
@@ -1297,8 +1297,7 @@ class SchedulerJobTest(unittest.TestCase):
 
     def test_scheduler_task_start_date(self):
         """
-        Test that the scheduler respects task start dates that are different
-        from DAG start dates
+        Test that the scheduler respects task start dates that are different from DAG start dates
         """
 
         dag_id = 'test_task_start_date_scheduling'
@@ -1824,7 +1823,7 @@ class SchedulerJobTest(unittest.TestCase):
 
         @mock.patch('airflow.models.DagBag', return_value=dagbag)
         @mock.patch('airflow.models.DagBag.collect_dags')
-        def do_schedule(function, function2):
+        def do_schedule(mock_dagbag, mock_collect_dags):
             # Use a empty file since the above mock will return the
             # expected DAGs. Also specify only a single file so that it doesn't
             # try to schedule the above DAG repeatedly.
@@ -2066,7 +2065,7 @@ class SchedulerJobTest(unittest.TestCase):
 
         @mock.patch('airflow.models.DagBag', return_value=dagbag)
         @mock.patch('airflow.models.DagBag.collect_dags')
-        def do_schedule(function, function2):
+        def do_schedule(mock_dagbag, mock_collect_dags):
             # Use a empty file since the above mock will return the
             # expected DAGs. Also specify only a single file so that it doesn't
             # try to schedule the above DAG repeatedly.

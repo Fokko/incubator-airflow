@@ -243,9 +243,6 @@ class PythonVirtualenvOperator(PythonOperator):
         self.string_args = string_args or []
         self.python_version = python_version
         self.system_site_packages = system_site_packages
-        # check that dill is present if needed
-        dill_in_requirements = map(lambda x: x.lower().startswith('dill'),
-                                   self.requirements)
         # check that a function is passed, and that it is not a lambda
         if (not isinstance(self.python_callable,
                            types.FunctionType) or (self.python_callable.__name__ ==

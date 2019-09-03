@@ -66,7 +66,6 @@ class TestPythonVirtualenvOperator(unittest.TestCase):
                 python_callable=f,
                 task_id='task',
                 dag=self.dag,
-                use_dill=True,
                 system_site_packages=False)
 
     def test_no_requirements(self):
@@ -138,7 +137,7 @@ class TestPythonVirtualenvOperator(unittest.TestCase):
             except AttributeError:
                 return
             raise Exception
-        self._run_as_operator(f, python_version=3, use_dill=False, requirements=['dill'])
+        self._run_as_operator(f, python_version=3, requirements=['dill'])
 
     @staticmethod
     def _invert_python_major_version():
@@ -162,7 +161,7 @@ class TestPythonVirtualenvOperator(unittest.TestCase):
     def test_without_dill(self):
         def f(a):
             return a
-        self._run_as_operator(f, system_site_packages=False, use_dill=False, op_args=[4])
+        self._run_as_operator(f, system_site_packages=False, op_args=[4])
 
     def test_string_args(self):
         def f():

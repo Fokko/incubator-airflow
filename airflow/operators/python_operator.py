@@ -19,7 +19,6 @@
 
 import inspect
 import os
-import pickle
 import subprocess
 import sys
 import types
@@ -188,10 +187,6 @@ class PythonVirtualenvOperator(PythonOperator):
     :param python_version: The Python version to run the virtualenv with. Note that
         both 2 and 2.7 are acceptable forms.
     :type python_version: str
-    :param use_dill: Whether to use dill to serialize
-        the args and result (pickle is default). This allow more complex types
-        but requires you to include dill in your requirements.
-    :type use_dill: bool
     :param system_site_packages: Whether to include
         system_site_packages in your virtualenv.
         See virtualenv documentation for more information.
@@ -225,7 +220,6 @@ class PythonVirtualenvOperator(PythonOperator):
         python_callable: Callable,
         requirements: Optional[Iterable[str]] = None,
         python_version: Optional[str] = None,
-        use_dill: bool = False,
         system_site_packages: bool = True,
         op_args: Iterable = None,
         op_kwargs: Dict = None,
@@ -248,14 +242,10 @@ class PythonVirtualenvOperator(PythonOperator):
         self.requirements = requirements or []
         self.string_args = string_args or []
         self.python_version = python_version
-        self.use_dill = use_dill
         self.system_site_packages = system_site_packages
         # check that dill is present if needed
         dill_in_requirements = map(lambda x: x.lower().startswith('dill'),
                                    self.requirements)
-        if (not system_site_packages) and use_dill and not any(dill_in_requirements):
-            raise AirflowException('If using dill, dill must be in the environment ' +
-                                   'either via system_site_packages or requirements')
         # check that a function is passed, and that it is not a lambda
         if (not isinstance(self.python_callable,
                            types.FunctionType) or (self.python_callable.__name__ ==
@@ -326,20 +316,14 @@ class PythonVirtualenvOperator(PythonOperator):
         if self._pass_op_args():
             with open(input_filename, 'wb') as file:
                 arg_dict = ({'args': self.op_args, 'kwargs': self.op_kwargs})
-                if self.use_dill:
-                    dill.dump(arg_dict, file)
-                else:
-                    pickle.dump(arg_dict, file)
+                dill.dump(arg_dict, file)
 
     def _read_result(self, output_filename):
         if os.stat(output_filename).st_size == 0:
             return None
         with open(output_filename, 'rb') as file:
             try:
-                if self.use_dill:
-                    return dill.load(file)
-                else:
-                    return pickle.load(file)
+                return dill.load(file)
             except ValueError:
                 self.log.error("Error deserializing result. "
                                "Note that result deserialization "
@@ -376,15 +360,10 @@ class PythonVirtualenvOperator(PythonOperator):
                 input_filename, output_filename, string_args_filename]
 
     def _generate_python_code(self):
-        if self.use_dill:
-            pickling_library = 'dill'
-        else:
-            pickling_library = 'pickle'
         fn = self.python_callable
         # dont try to read pickle if we didnt pass anything
         if self._pass_op_args():
-            load_args_line = 'with open(sys.argv[1], "rb") as file: arg_dict = {}.load(file)'\
-                .format(pickling_library)
+            load_args_line = 'with open(sys.argv[1], "rb") as file: arg_dict = dill.load(file)'
         else:
             load_args_line = 'arg_dict = {"args": [], "kwargs": {}}'
 
@@ -392,7 +371,7 @@ class PythonVirtualenvOperator(PythonOperator):
         # any type of indents in the original function
         # we deserialize args, call function, serialize result if necessary
         return dedent("""\
-        import {pickling_library}
+        import dill
         import sys
         {load_args_code}
         args = arg_dict["args"]
@@ -402,8 +381,7 @@ class PythonVirtualenvOperator(PythonOperator):
         {python_callable_lines}
         res = {python_callable_name}(*args, **kwargs)
         with open(sys.argv[2], 'wb') as file:
-            res is not None and {pickling_library}.dump(res, file)
+            res is not None and dill.dump(res, file)
         """).format(load_args_code=load_args_line,
                     python_callable_lines=dedent(inspect.getsource(fn)),
-                    python_callable_name=fn.__name__,
-                    pickling_library=pickling_library)
+                    python_callable_name=fn.__name__)

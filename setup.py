@@ -330,7 +330,7 @@ def do_setup():
             'cached_property~=1.5',
             'colorlog==4.0.2',
             'croniter>=0.3.17, <0.4',
-            'dill>=0.2.2, <0.3',
+            'dill==0.3.0',
             'dumb-init>=1.2.2',
             'flask>=1.1.0, <2.0',
             'flask-appbuilder>=1.12.5, <2.0.0',

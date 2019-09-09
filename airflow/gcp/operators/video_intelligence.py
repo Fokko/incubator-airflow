@@ -19,9 +19,12 @@
 """
 This module contains Google Cloud Vision operators.
 """
+from typing import Dict, Union, Optional
 
+from google.api_core.retry import Retry
 from google.protobuf.json_format import MessageToDict
 from google.cloud.videointelligence_v1 import enums
+from google.cloud.videointelligence_v1.types import VideoContext
 
 from airflow.gcp.hooks.video_intelligence import CloudVideoIntelligenceHook
 from airflow.models import BaseOperator
@@ -55,6 +58,9 @@ class CloudVideoIntelligenceDetectVideoLabelsOperator(BaseOperator):
     :param retry: Retry object used to determine when/if to retry requests.
         If None is specified, requests will not be retried.
     :type retry: google.api_core.retry.Retry
+    :param timeout: Optional, The amount of time, in seconds, to wait for the request to complete.
+        Note that if retry is specified, the timeout applies to each individual attempt.
+    :type timeout: float
     :param gcp_conn_id: Optional, The connection ID used to connect to Google Cloud
         Platform. Defaults to ``google_cloud_default``.
     :type gcp_conn_id: str
@@ -65,16 +71,17 @@ class CloudVideoIntelligenceDetectVideoLabelsOperator(BaseOperator):
 
     def __init__(
         self,
-        input_uri,
-        input_content=None,
-        output_uri=None,
-        video_context=None,
-        location=None,
-        retry=None,
-        gcp_conn_id="google_cloud_default",
+        input_uri: str,
+        input_content: Optional[bytes] = None,
+        output_uri: Optional[str] = None,
+        video_context: Union[Dict, VideoContext] = None,
+        location: Optional[str] = None,
+        retry: Optional[Retry] = None,
+        timeout: Optional[float] = None,
+        gcp_conn_id: str = "google_cloud_default",
         *args,
         **kwargs
-    ):
+    ) -> None:
         super().__init__(*args, **kwargs)
         self.input_uri = input_uri
         self.input_content = input_content
@@ -83,6 +90,7 @@ class CloudVideoIntelligenceDetectVideoLabelsOperator(BaseOperator):
         self.location = location
         self.retry = retry
         self.gcp_conn_id = gcp_conn_id
+        self.timeout = timeout
 
     def execute(self, context):
         hook = CloudVideoIntelligenceHook(gcp_conn_id=self.gcp_conn_id)
@@ -93,6 +101,7 @@ class CloudVideoIntelligenceDetectVideoLabelsOperator(BaseOperator):
             location=self.location,
             retry=self.retry,
             features=[enums.Feature.LABEL_DETECTION],
+            timeout=self.timeout
         )
         self.log.info("Processing video for label annotations")
         result = MessageToDict(operation.result())
@@ -128,6 +137,9 @@ class CloudVideoIntelligenceDetectVideoExplicitContentOperator(BaseOperator):
     :param retry: Retry object used to determine when/if to retry requests.
         If None is specified, requests will not be retried.
     :type retry: google.api_core.retry.Retry
+    :param timeout: Optional, The amount of time, in seconds, to wait for the request to complete.
+        Note that if retry is specified, the timeout applies to each individual attempt.
+    :type timeout: float
     :param gcp_conn_id: Optional, The connection ID used to connect to Google Cloud
         Platform. Defaults to ``google_cloud_default``.
     :type gcp_conn_id: str
@@ -138,16 +150,17 @@ class CloudVideoIntelligenceDetectVideoExplicitContentOperator(BaseOperator):
 
     def __init__(
         self,
-        input_uri,
-        output_uri=None,
-        input_content=None,
-        video_context=None,
-        location=None,
-        retry=None,
-        gcp_conn_id="google_cloud_default",
+        input_uri: str,
+        output_uri: Optional[str] = None,
+        input_content: Optional[bytes] = None,
+        video_context: Union[Dict, VideoContext] = None,
+        location: Optional[str] = None,
+        retry: Optional[Retry] = None,
+        timeout: Optional[float] = None,
+        gcp_conn_id: str = "google_cloud_default",
         *args,
         **kwargs
-    ):
+    ) -> None:
         super().__init__(*args, **kwargs)
         self.input_uri = input_uri
         self.output_uri = output_uri
@@ -156,6 +169,7 @@ class CloudVideoIntelligenceDetectVideoExplicitContentOperator(BaseOperator):
         self.location = location
         self.retry = retry
         self.gcp_conn_id = gcp_conn_id
+        self.timeout = timeout
 
     def execute(self, context):
         hook = CloudVideoIntelligenceHook(gcp_conn_id=self.gcp_conn_id)
@@ -166,6 +180,7 @@ class CloudVideoIntelligenceDetectVideoExplicitContentOperator(BaseOperator):
             location=self.location,
             retry=self.retry,
             features=[enums.Feature.EXPLICIT_CONTENT_DETECTION],
+            timeout=self.timeout
         )
         self.log.info("Processing video for explicit content annotations")
         result = MessageToDict(operation.result())
@@ -201,6 +216,9 @@ class CloudVideoIntelligenceDetectVideoShotsOperator(BaseOperator):
     :param retry: Retry object used to determine when/if to retry requests.
         If None is specified, requests will not be retried.
     :type retry: google.api_core.retry.Retry
+    :param timeout: Optional, The amount of time, in seconds, to wait for the request to complete.
+        Note that if retry is specified, the timeout applies to each individual attempt.
+    :type timeout: float
     :param gcp_conn_id: Optional, The connection ID used to connect to Google Cloud
         Platform. Defaults to ``google_cloud_default``.
     :type gcp_conn_id: str
@@ -211,16 +229,17 @@ class CloudVideoIntelligenceDetectVideoShotsOperator(BaseOperator):
 
     def __init__(
         self,
-        input_uri,
-        output_uri=None,
-        input_content=None,
-        video_context=None,
-        location=None,
-        retry=None,
-        gcp_conn_id="google_cloud_default",
+        input_uri: str,
+        output_uri: Optional[str] = None,
+        input_content: Optional[bytes] = None,
+        video_context: Union[Dict, VideoContext] = None,
+        location: Optional[str] = None,
+        retry: Optional[Retry] = None,
+        timeout: Optional[float] = None,
+        gcp_conn_id: str = "google_cloud_default",
         *args,
         **kwargs
-    ):
+    ) -> None:
         super().__init__(*args, **kwargs)
         self.input_uri = input_uri
         self.output_uri = output_uri
@@ -229,6 +248,7 @@ class CloudVideoIntelligenceDetectVideoShotsOperator(BaseOperator):
         self.location = location
         self.retry = retry
         self.gcp_conn_id = gcp_conn_id
+        self.timeout = timeout
 
     def execute(self, context):
         hook = CloudVideoIntelligenceHook(gcp_conn_id=self.gcp_conn_id)
@@ -239,6 +259,7 @@ class CloudVideoIntelligenceDetectVideoShotsOperator(BaseOperator):
             location=self.location,
             retry=self.retry,
             features=[enums.Feature.SHOT_CHANGE_DETECTION],
+            timeout=self.timeout
         )
         self.log.info("Processing video for video shots annotations")
         result = MessageToDict(operation.result())

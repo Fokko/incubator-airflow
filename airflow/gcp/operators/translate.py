@@ -19,6 +19,7 @@
 """
 This module contains Google Translate operators.
 """
+from typing import List, Union
 
 from airflow import AirflowException
 from airflow.gcp.hooks.translate import CloudTranslateHook
@@ -80,15 +81,15 @@ class CloudTranslateTextOperator(BaseOperator):
     @apply_defaults
     def __init__(
         self,
-        values,
-        target_language,
-        format_,
-        source_language,
-        model,
+        values: Union[List[str], str],
+        target_language: str,
+        format_: str,
+        source_language: str,
+        model: str,
         gcp_conn_id='google_cloud_default',
         *args,
         **kwargs
-    ):
+    ) -> None:
         super().__init__(*args, **kwargs)
         self.values = values
         self.target_language = target_language
@@ -98,9 +99,9 @@ class CloudTranslateTextOperator(BaseOperator):
         self.gcp_conn_id = gcp_conn_id
 
     def execute(self, context):
-        _hook = CloudTranslateHook(gcp_conn_id=self.gcp_conn_id)
+        hook = CloudTranslateHook(gcp_conn_id=self.gcp_conn_id)
         try:
-            translation = _hook.translate(
+            translation = hook.translate(
                 values=self.values,
                 target_language=self.target_language,
                 format_=self.format_,

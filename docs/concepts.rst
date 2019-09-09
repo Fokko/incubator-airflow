@@ -451,8 +451,9 @@ reached, runnable tasks get queued and their state will show as such in the
 UI. As slots free up, queued tasks start running based on the
 ``priority_weight`` (of the task and its descendants).
 
-Note that by default tasks aren't assigned to any pool and their
-execution parallelism is only limited to the executor's setting.
+Note that if tasks are not given a pool, they are assigned to a default
+pool ``default_pool``.  ``default_pool`` is initialized with 128 slots and
+can changed through the UI or CLI (though it cannot be removed).
 
 To combine Pools with SubDAGs see the `SubDAGs`_ section.
 
@@ -1090,6 +1091,21 @@ as an environment variable named ``EXECUTION_DATE`` in your Bash script.
 You can use Jinja templating with every parameter that is marked as "templated"
 in the documentation. Template substitution occurs just before the pre_execute
 function of your operator is called.
+
+You can pass custom options to the Jinja ``Environment`` when creating your DAG.
+One common usage is to avoid Jinja from dropping a trailing newline from a
+template string:
+
+.. code:: python
+
+  my_dag = DAG(dag_id='my-dag',
+               jinja_environment_kwargs={
+                    'keep_trailing_newline': True,
+                    # some other jinja2 Environment options here
+               })
+
+See `Jinja documentation <https://jinja.palletsprojects.com/en/master/api/#jinja2.Environment>`_
+to find all available options.
 
 Packaged DAGs
 '''''''''''''

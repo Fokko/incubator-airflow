@@ -17,8 +17,7 @@
 This module contains GCP MLEngine operators.
 """
 import re
-
-from googleapiclient.errors import HttpError
+from typing import List, Optional
 
 from airflow.gcp.hooks.mlengine import MLEngineHook
 from airflow.exceptions import AirflowException
@@ -29,7 +28,7 @@ from airflow.utils.log.logging_mixin import LoggingMixin
 log = LoggingMixin().log
 
 
-def _normalize_mlengine_job_id(job_id):
+def _normalize_mlengine_job_id(job_id: str) -> str:
     """
     Replaces invalid MLEngine job_id characters with '_'.
 
@@ -53,11 +52,11 @@ def _normalize_mlengine_job_id(job_id):
     # Clean up 'bad' characters except templates
     tracker = 0
     cleansed_job_id = ''
-    for m in re.finditer(r'\{{2}.+?\}{2}', job):
+    for match in re.finditer(r'\{{2}.+?\}{2}', job):
         cleansed_job_id += re.sub(r'[^0-9a-zA-Z]+', '_',
-                                  job[tracker:m.start()])
-        cleansed_job_id += job[m.start():m.end()]
-        tracker = m.end()
+                                  job[tracker:match.start()])
+        cleansed_job_id += job[match.start():match.end()]
+        tracker = match.end()
 
     # Clean up last substring or the full string if no templates
     cleansed_job_id += re.sub(r'[^0-9a-zA-Z]+', '_', job[tracker:])
@@ -173,23 +172,23 @@ class MLEngineBatchPredictionOperator(BaseOperator):
     ]
 
     @apply_defaults
-    def __init__(self,
-                 project_id,
-                 job_id,
-                 region,
-                 data_format,
-                 input_paths,
-                 output_path,
-                 model_name=None,
-                 version_name=None,
-                 uri=None,
-                 max_worker_count=None,
-                 runtime_version=None,
-                 signature_name=None,
-                 gcp_conn_id='google_cloud_default',
-                 delegate_to=None,
+    def __init__(self,  # pylint:disable=too-many-arguments
+                 project_id: str,
+                 job_id: str,
+                 region: str,
+                 data_format: str,
+                 input_paths: List[str],
+                 output_path: str,
+                 model_name: Optional[str] = None,
+                 version_name: Optional[str] = None,
+                 uri: Optional[str] = None,
+                 max_worker_count: Optional[int] = None,
+                 runtime_version: Optional[str] = None,
+                 signature_name: Optional[str] = None,
+                 gcp_conn_id: str = 'google_cloud_default',
+                 delegate_to: Optional[str] = None,
                  *args,
-                 **kwargs):
+                 **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
         self._project_id = project_id
@@ -273,11 +272,8 @@ class MLEngineBatchPredictionOperator(BaseOperator):
             return existing_job.get('predictionInput', None) == \
                 prediction_request['predictionInput']
 
-        try:
-            finished_prediction_job = hook.create_job(
-                self._project_id, prediction_request, check_existing_job)
-        except HttpError:
-            raise
+        finished_prediction_job = hook.create_job(
+            self._project_id, prediction_request, check_existing_job)
 
         if finished_prediction_job['state'] != 'SUCCEEDED':
             self.log.error(
@@ -321,13 +317,13 @@ class MLEngineModelOperator(BaseOperator):
 
     @apply_defaults
     def __init__(self,
-                 project_id,
-                 model,
-                 operation='create',
-                 gcp_conn_id='google_cloud_default',
-                 delegate_to=None,
+                 project_id: str,
+                 model: dict,
+                 operation: str = 'create',
+                 gcp_conn_id: str = 'google_cloud_default',
+                 delegate_to: Optional[str] = None,
                  *args,
-                 **kwargs):
+                 **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._project_id = project_id
         self._model = model
@@ -410,15 +406,15 @@ class MLEngineVersionOperator(BaseOperator):
 
     @apply_defaults
     def __init__(self,
-                 project_id,
-                 model_name,
-                 version_name=None,
-                 version=None,
-                 operation='create',
-                 gcp_conn_id='google_cloud_default',
-                 delegate_to=None,
+                 project_id: str,
+                 model_name: str,
+                 version_name: Optional[str] = None,
+                 version: Optional[dict] = None,
+                 operation: str = 'create',
+                 gcp_conn_id: str = 'google_cloud_default',
+                 delegate_to: Optional[str] = None,
                  *args,
-                 **kwargs):
+                 **kwargs) -> None:
 
         super().__init__(*args, **kwargs)
         self._project_id = project_id
@@ -531,23 +527,23 @@ class MLEngineTrainingOperator(BaseOperator):
     ]
 
     @apply_defaults
-    def __init__(self,
-                 project_id,
-                 job_id,
-                 package_uris,
-                 training_python_module,
-                 training_args,
-                 region,
-                 scale_tier=None,
-                 master_type=None,
-                 runtime_version=None,
-                 python_version=None,
-                 job_dir=None,
-                 gcp_conn_id='google_cloud_default',
-                 delegate_to=None,
-                 mode='PRODUCTION',
+    def __init__(self,  # pylint:disable=too-many-arguments
+                 project_id: str,
+                 job_id: str,
+                 package_uris: str,
+                 training_python_module: str,
+                 training_args: str,
+                 region: str,
+                 scale_tier: Optional[str] = None,
+                 master_type: Optional[str] = None,
+                 runtime_version: Optional[str] = None,
+                 python_version: Optional[str] = None,
+                 job_dir: Optional[str] = None,
+                 gcp_conn_id: str = 'google_cloud_default',
+                 delegate_to: Optional[str] = None,
+                 mode: str = 'PRODUCTION',
                  *args,
-                 **kwargs):
+                 **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._project_id = project_id
         self._job_id = job_id
@@ -623,11 +619,8 @@ class MLEngineTrainingOperator(BaseOperator):
             return existing_job.get('trainingInput', None) == \
                 training_request['trainingInput']
 
-        try:
-            finished_training_job = hook.create_job(
-                self._project_id, training_request, check_existing_job)
-        except HttpError:
-            raise
+        finished_training_job = hook.create_job(
+            self._project_id, training_request, check_existing_job)
 
         if finished_training_job['state'] != 'SUCCEEDED':
             self.log.error('MLEngine training job failed: %s', str(finished_training_job))

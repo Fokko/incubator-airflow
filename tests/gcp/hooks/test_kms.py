@@ -39,11 +39,20 @@ def mock_init(self, gcp_conn_id, delegate_to=None):  # pylint: disable=unused-ar
     pass
 
 
-class GoogleCloudKMSHookTest(unittest.TestCase):
+class TestGoogleCloudKMSHook(unittest.TestCase):
     def setUp(self):
         with mock.patch(BASE_STRING.format('GoogleCloudBaseHook.__init__'),
                         new=mock_init):
             self.kms_hook = GoogleCloudKMSHook(gcp_conn_id='test')
+
+    @mock.patch("airflow.gcp.hooks.kms.GoogleCloudKMSHook._authorize")
+    @mock.patch("airflow.gcp.hooks.kms.build")
+    def test_kms_client_creation(self, mock_build, mock_authorize):
+        result = self.kms_hook.get_conn()
+        mock_build.assert_called_once_with(
+            'cloudkms', 'v1', http=mock_authorize.return_value, cache_discovery=False
+        )
+        self.assertEqual(mock_build.return_value, result)
 
     @mock.patch(KMS_STRING.format('GoogleCloudKMSHook.get_conn'))
     def test_encrypt(self, mock_service):
@@ -63,9 +72,8 @@ class GoogleCloudKMSHookTest(unittest.TestCase):
         execute_method.return_value = response
 
         ret_val = self.kms_hook.encrypt(TEST_KEY_ID, plaintext)
-        encrypt_method.assert_called_with(name=TEST_KEY_ID,
-                                          body=body)
-        execute_method.assert_called_with(num_retries=mock.ANY)
+        encrypt_method.assert_called_once_with(name=TEST_KEY_ID, body=body)
+        execute_method.assert_called_once_with(num_retries=mock.ANY)
         self.assertEqual(ciphertext, ret_val)
 
     @mock.patch(KMS_STRING.format('GoogleCloudKMSHook.get_conn'))
@@ -92,9 +100,8 @@ class GoogleCloudKMSHookTest(unittest.TestCase):
 
         ret_val = self.kms_hook.encrypt(TEST_KEY_ID, plaintext,
                                         authenticated_data=auth_data)
-        encrypt_method.assert_called_with(name=TEST_KEY_ID,
-                                          body=body)
-        execute_method.assert_called_with(num_retries=mock.ANY)
+        encrypt_method.assert_called_once_with(name=TEST_KEY_ID, body=body)
+        execute_method.assert_called_once_with(num_retries=mock.ANY)
         self.assertEqual(ciphertext, ret_val)
 
     @mock.patch(KMS_STRING.format('GoogleCloudKMSHook.get_conn'))
@@ -115,9 +122,8 @@ class GoogleCloudKMSHookTest(unittest.TestCase):
         execute_method.return_value = response
 
         ret_val = self.kms_hook.decrypt(TEST_KEY_ID, ciphertext)
-        decrypt_method.assert_called_with(name=TEST_KEY_ID,
-                                          body=body)
-        execute_method.assert_called_with(num_retries=mock.ANY)
+        decrypt_method.assert_called_once_with(name=TEST_KEY_ID, body=body)
+        execute_method.assert_called_once_with(num_retries=mock.ANY)
         self.assertEqual(plaintext, ret_val)
 
     @mock.patch(KMS_STRING.format('GoogleCloudKMSHook.get_conn'))
@@ -144,7 +150,6 @@ class GoogleCloudKMSHookTest(unittest.TestCase):
 
         ret_val = self.kms_hook.decrypt(TEST_KEY_ID, ciphertext,
                                         authenticated_data=auth_data)
-        decrypt_method.assert_called_with(name=TEST_KEY_ID,
-                                          body=body)
-        execute_method.assert_called_with(num_retries=mock.ANY)
+        decrypt_method.assert_called_once_with(name=TEST_KEY_ID, body=body)
+        execute_method.assert_called_once_with(num_retries=mock.ANY)
         self.assertEqual(plaintext, ret_val)

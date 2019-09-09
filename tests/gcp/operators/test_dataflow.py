@@ -36,6 +36,7 @@ PARAMETERS = {
     'output': 'gs://test/output/my_output'
 }
 PY_FILE = 'gs://my-bucket/my-object.py'
+PY_INTERPRETER = 'python2'
 JAR_FILE = 'example/test.jar'
 JOB_CLASS = 'com.test.NotMain'
 PY_OPTIONS = ['-m']
@@ -62,7 +63,7 @@ POLL_SLEEP = 30
 GCS_HOOK_STRING = 'airflow.gcp.operators.dataflow.{}'
 
 
-class DataFlowPythonOperatorTest(unittest.TestCase):
+class TestDataFlowPythonOperator(unittest.TestCase):
 
     def setUp(self):
         self.dataflow = DataFlowPythonOperator(
@@ -80,6 +81,7 @@ class DataFlowPythonOperatorTest(unittest.TestCase):
         self.assertEqual(self.dataflow.job_name, JOB_NAME)
         self.assertEqual(self.dataflow.py_file, PY_FILE)
         self.assertEqual(self.dataflow.py_options, PY_OPTIONS)
+        self.assertEqual(self.dataflow.py_interpreter, PY_INTERPRETER)
         self.assertEqual(self.dataflow.poll_sleep, POLL_SLEEP)
         self.assertEqual(self.dataflow.dataflow_default_options,
                          DEFAULT_OPTIONS_PYTHON)
@@ -105,11 +107,11 @@ class DataFlowPythonOperatorTest(unittest.TestCase):
         }
         gcs_download_hook.assert_called_once_with(PY_FILE)
         start_python_hook.assert_called_once_with(JOB_NAME, expected_options, mock.ANY,
-                                                  PY_OPTIONS)
+                                                  PY_OPTIONS, py_interpreter=PY_INTERPRETER)
         self.assertTrue(self.dataflow.py_file.startswith('/tmp/dataflow'))
 
 
-class DataFlowJavaOperatorTest(unittest.TestCase):
+class TestDataFlowJavaOperator(unittest.TestCase):
 
     def setUp(self):
         self.dataflow = DataFlowJavaOperator(
@@ -208,7 +210,7 @@ class DataFlowJavaOperatorTest(unittest.TestCase):
         dataflow_running.assert_called_once_with(JOB_NAME, mock.ANY)
 
 
-class DataFlowTemplateOperatorTest(unittest.TestCase):
+class TestDataFlowTemplateOperator(unittest.TestCase):
 
     def setUp(self):
         self.dataflow = DataflowTemplateOperator(
@@ -248,7 +250,7 @@ class DataFlowTemplateOperatorTest(unittest.TestCase):
                                                     PARAMETERS, TEMPLATE)
 
 
-class GoogleCloudBucketHelperTest(unittest.TestCase):
+class TestGoogleCloudBucketHelper(unittest.TestCase):
 
     @mock.patch(
         'airflow.gcp.operators.dataflow.GoogleCloudBucketHelper.__init__'

@@ -21,7 +21,7 @@ This module contains Google Compute Engine operators.
 """
 
 from copy import deepcopy
-from typing import Dict
+from typing import Dict, Optional, List, Any
 from json_merge_patch import merge
 
 from googleapiclient.errors import HttpError
@@ -41,19 +41,18 @@ class GceBaseOperator(BaseOperator):
 
     @apply_defaults
     def __init__(self,
-                 zone,
-                 resource_id,
-                 project_id=None,
-                 gcp_conn_id='google_cloud_default',
-                 api_version='v1',
-                 *args, **kwargs):
+                 zone: str,
+                 resource_id: str,
+                 project_id: Optional[str] = None,
+                 gcp_conn_id: str = 'google_cloud_default',
+                 api_version: str = 'v1',
+                 *args, **kwargs) -> None:
         self.project_id = project_id
         self.zone = zone
         self.resource_id = resource_id
         self.gcp_conn_id = gcp_conn_id
         self.api_version = api_version
         self._validate_inputs()
-        self._hook = GceHook(gcp_conn_id=self.gcp_conn_id, api_version=self.api_version)
         super().__init__(*args, **kwargs)
 
     def _validate_inputs(self):
@@ -99,20 +98,21 @@ class GceInstanceStartOperator(GceBaseOperator):
 
     @apply_defaults
     def __init__(self,
-                 zone,
-                 resource_id,
-                 project_id=None,
-                 gcp_conn_id='google_cloud_default',
-                 api_version='v1',
-                 *args, **kwargs):
+                 zone: str,
+                 resource_id: str,
+                 project_id: Optional[str] = None,
+                 gcp_conn_id: str = 'google_cloud_default',
+                 api_version: str = 'v1',
+                 *args, **kwargs) -> None:
         super().__init__(
             project_id=project_id, zone=zone, resource_id=resource_id,
             gcp_conn_id=gcp_conn_id, api_version=api_version, *args, **kwargs)
 
     def execute(self, context):
-        return self._hook.start_instance(zone=self.zone,
-                                         resource_id=self.resource_id,
-                                         project_id=self.project_id)
+        hook = GceHook(gcp_conn_id=self.gcp_conn_id, api_version=self.api_version)
+        return hook.start_instance(zone=self.zone,
+                                   resource_id=self.resource_id,
+                                   project_id=self.project_id)
 
 
 class GceInstanceStopOperator(GceBaseOperator):
@@ -146,20 +146,21 @@ class GceInstanceStopOperator(GceBaseOperator):
 
     @apply_defaults
     def __init__(self,
-                 zone,
-                 resource_id,
-                 project_id=None,
-                 gcp_conn_id='google_cloud_default',
-                 api_version='v1',
-                 *args, **kwargs):
+                 zone: str,
+                 resource_id: str,
+                 project_id: Optional[str] = None,
+                 gcp_conn_id: str = 'google_cloud_default',
+                 api_version: str = 'v1',
+                 *args, **kwargs) -> None:
         super().__init__(
             project_id=project_id, zone=zone, resource_id=resource_id,
             gcp_conn_id=gcp_conn_id, api_version=api_version, *args, **kwargs)
 
     def execute(self, context):
-        self._hook.stop_instance(zone=self.zone,
-                                 resource_id=self.resource_id,
-                                 project_id=self.project_id)
+        hook = GceHook(gcp_conn_id=self.gcp_conn_id, api_version=self.api_version)
+        hook.stop_instance(zone=self.zone,
+                           resource_id=self.resource_id,
+                           project_id=self.project_id)
 
 
 SET_MACHINE_TYPE_VALIDATION_SPECIFICATION = [
@@ -198,21 +199,21 @@ class GceSetMachineTypeOperator(GceBaseOperator):
     :type validate_body: bool
     """
     # [START gce_instance_set_machine_type_template_fields]
-    template_fields = ('project_id', 'zone', 'resource_id', 'gcp_conn_id', 'api_version')
+    template_fields = ('project_id', 'zone', 'resource_id', 'body', 'gcp_conn_id', 'api_version')
     # [END gce_instance_set_machine_type_template_fields]
 
     @apply_defaults
     def __init__(self,
-                 zone,
-                 resource_id,
-                 body,
-                 project_id=None,
-                 gcp_conn_id='google_cloud_default',
-                 api_version='v1',
-                 validate_body=True,
-                 *args, **kwargs):
+                 zone: str,
+                 resource_id: str,
+                 body: dict,
+                 project_id: Optional[str] = None,
+                 gcp_conn_id: str = 'google_cloud_default',
+                 api_version: str = 'v1',
+                 validate_body: bool = True,
+                 *args, **kwargs) -> None:
         self.body = body
-        self._field_validator = None
+        self._field_validator = None  # type: Optional[GcpBodyFieldValidator]
         if validate_body:
             self._field_validator = GcpBodyFieldValidator(
                 SET_MACHINE_TYPE_VALIDATION_SPECIFICATION, api_version=api_version)
@@ -225,11 +226,12 @@ class GceSetMachineTypeOperator(GceBaseOperator):
             self._field_validator.validate(self.body)
 
     def execute(self, context):
+        hook = GceHook(gcp_conn_id=self.gcp_conn_id, api_version=self.api_version)
         self._validate_all_body_fields()
-        return self._hook.set_machine_type(zone=self.zone,
-                                           resource_id=self.resource_id,
-                                           body=self.body,
-                                           project_id=self.project_id)
+        return hook.set_machine_type(zone=self.zone,
+                                     resource_id=self.resource_id,
+                                     body=self.body,
+                                     project_id=self.project_id)
 
 
 GCE_INSTANCE_TEMPLATE_VALIDATION_PATCH_SPECIFICATION = [
@@ -260,7 +262,7 @@ GCE_INSTANCE_TEMPLATE_VALIDATION_PATCH_SPECIFICATION = [
         dict(name="guestAccelerators", optional=True),  # not validating deeper
         dict(name="minCpuPlatform", optional=True),
     ]),
-]
+]  # type: List[Dict[str, Any]]
 
 GCE_INSTANCE_TEMPLATE_FIELDS_TO_SANITIZE = [
     "kind",
@@ -324,17 +326,17 @@ class GceInstanceTemplateCopyOperator(GceBaseOperator):
 
     @apply_defaults
     def __init__(self,
-                 resource_id,
-                 body_patch,
-                 project_id=None,
+                 resource_id: str,
+                 body_patch: dict,
+                 project_id: Optional[str] = None,
                  request_id=None,
-                 gcp_conn_id='google_cloud_default',
-                 api_version='v1',
-                 validate_body=True,
-                 *args, **kwargs):
+                 gcp_conn_id: str = 'google_cloud_default',
+                 api_version: str = 'v1',
+                 validate_body: bool = True,
+                 *args, **kwargs) -> None:
         self.body_patch = body_patch
         self.request_id = request_id
-        self._field_validator = None
+        self._field_validator = None  # Optional[GcpBodyFieldValidator]
         if 'name' not in self.body_patch:
             raise AirflowException("The body '{}' should contain at least "
                                    "name for the new operator in the 'name' field".
@@ -353,6 +355,7 @@ class GceInstanceTemplateCopyOperator(GceBaseOperator):
             self._field_validator.validate(self.body_patch)
 
     def execute(self, context):
+        hook = GceHook(gcp_conn_id=self.gcp_conn_id, api_version=self.api_version)
         self._validate_all_body_fields()
         try:
             # Idempotence check (sort of) - we want to check if the new template
@@ -362,7 +365,7 @@ class GceInstanceTemplateCopyOperator(GceBaseOperator):
             # and deleting/recreating is not worth the hassle especially
             # that we cannot delete template if it is already used in some Instance
             # Group Manager. We assume success if the template is simply present
-            existing_template = self._hook.get_instance_template(
+            existing_template = hook.get_instance_template(
                 resource_id=self.body_patch['name'], project_id=self.project_id)
             self.log.info(
                 "The %s template already existed. It was likely created by previous run of the operator. "
@@ -375,17 +378,17 @@ class GceInstanceTemplateCopyOperator(GceBaseOperator):
             # not yet exist
             if not e.resp.status == 404:
                 raise e
-        old_body = self._hook.get_instance_template(resource_id=self.resource_id,
-                                                    project_id=self.project_id)
+        old_body = hook.get_instance_template(resource_id=self.resource_id,
+                                              project_id=self.project_id)
         new_body = deepcopy(old_body)
         self._field_sanitizer.sanitize(new_body)
         new_body = merge(new_body, self.body_patch)
         self.log.info("Calling insert instance template with updated body: %s", new_body)
-        self._hook.insert_instance_template(body=new_body,
-                                            request_id=self.request_id,
-                                            project_id=self.project_id)
-        return self._hook.get_instance_template(resource_id=self.body_patch['name'],
-                                                project_id=self.project_id)
+        hook.insert_instance_template(body=new_body,
+                                      request_id=self.request_id,
+                                      project_id=self.project_id)
+        return hook.get_instance_template(resource_id=self.body_patch['name'],
+                                          project_id=self.project_id)
 
 
 class GceInstanceGroupManagerUpdateTemplateOperator(GceBaseOperator):
@@ -433,16 +436,16 @@ class GceInstanceGroupManagerUpdateTemplateOperator(GceBaseOperator):
 
     @apply_defaults
     def __init__(self,
-                 resource_id,
-                 zone,
-                 source_template,
-                 destination_template,
-                 project_id=None,
+                 resource_id: str,
+                 zone: str,
+                 source_template: str,
+                 destination_template: str,
+                 project_id: Optional[str] = None,
                  update_policy=None,
                  request_id=None,
-                 gcp_conn_id='google_cloud_default',
+                 gcp_conn_id: str = 'google_cloud_default',
                  api_version='beta',
-                 *args, **kwargs):
+                 *args, **kwargs) -> None:
         self.zone = zone
         self.source_template = source_template
         self.destination_template = destination_template
@@ -463,7 +466,8 @@ class GceInstanceGroupManagerUpdateTemplateOperator(GceBaseOperator):
             self._change_performed = True
 
     def execute(self, context):
-        old_instance_group_manager = self._hook.get_instance_group_manager(
+        hook = GceHook(gcp_conn_id=self.gcp_conn_id, api_version=self.api_version)
+        old_instance_group_manager = hook.get_instance_group_manager(
             zone=self.zone, resource_id=self.resource_id, project_id=self.project_id)
         patch_body = {}
         if 'versions' in old_instance_group_manager:
@@ -480,7 +484,7 @@ class GceInstanceGroupManagerUpdateTemplateOperator(GceBaseOperator):
             self.log.info(
                 "Calling patch instance template with updated body: %s",
                 patch_body)
-            return self._hook.patch_instance_group_manager(
+            return hook.patch_instance_group_manager(
                 zone=self.zone, resource_id=self.resource_id,
                 body=patch_body, request_id=self.request_id,
                 project_id=self.project_id)

@@ -19,10 +19,11 @@
 """
 This module contains Google Cloud Bigtable operators.
 """
-
-from typing import Iterable
+from enum import IntEnum
+from typing import Iterable, List, Optional, Dict
 
 import google.api_core.exceptions
+from google.cloud.bigtable.column_family import GarbageCollectionRule
 
 from airflow import AirflowException
 from airflow.models import BaseOperator
@@ -86,29 +87,31 @@ class BigtableInstanceCreateOperator(BaseOperator, BigtableValidationMixin):
     :type timeout: int
     :param timeout: (optional) timeout (in seconds) for instance creation.
                     If None is not specified, Operator will wait indefinitely.
+    :param gcp_conn_id: The connection ID to use to connect to Google Cloud Platform.
+    :type gcp_conn_id: str
     """
 
     REQUIRED_ATTRIBUTES = ('instance_id', 'main_cluster_id',
-                           'main_cluster_zone')
+                           'main_cluster_zone')  # type: Iterable[str]
     template_fields = ['project_id', 'instance_id', 'main_cluster_id',
-                       'main_cluster_zone']
+                       'main_cluster_zone']  # type: Iterable[str]
 
     @apply_defaults
     def __init__(self,  # pylint: disable=too-many-arguments
-                 instance_id,
-                 main_cluster_id,
-                 main_cluster_zone,
-                 project_id=None,
-                 replica_cluster_id=None,
-                 replica_cluster_zone=None,
-                 instance_display_name=None,
-                 instance_type=None,
-                 instance_labels=None,
-                 cluster_nodes=None,
-                 cluster_storage_type=None,
-                 timeout=None,
-                 gcp_conn_id='google_cloud_default',
-                 *args, **kwargs):
+                 instance_id: str,
+                 main_cluster_id: str,
+                 main_cluster_zone: str,
+                 project_id: Optional[str] = None,
+                 replica_cluster_id: Optional[str] = None,
+                 replica_cluster_zone: Optional[str] = None,
+                 instance_display_name: Optional[str] = None,
+                 instance_type: Optional[IntEnum] = None,
+                 instance_labels: Optional[int] = None,
+                 cluster_nodes: Optional[int] = None,
+                 cluster_storage_type: Optional[IntEnum] = None,
+                 timeout: Optional[float] = None,
+                 gcp_conn_id: str = 'google_cloud_default',
+                 *args, **kwargs) -> None:
         self.project_id = project_id
         self.instance_id = instance_id
         self.main_cluster_id = main_cluster_id
@@ -122,12 +125,13 @@ class BigtableInstanceCreateOperator(BaseOperator, BigtableValidationMixin):
         self.cluster_storage_type = cluster_storage_type
         self.timeout = timeout
         self._validate_inputs()
-        self.hook = BigtableHook(gcp_conn_id=gcp_conn_id)
+        self.gcp_conn_id = gcp_conn_id
         super().__init__(*args, **kwargs)
 
     def execute(self, context):
-        instance = self.hook.get_instance(project_id=self.project_id,
-                                          instance_id=self.instance_id)
+        hook = BigtableHook(gcp_conn_id=self.gcp_conn_id)
+        instance = hook.get_instance(project_id=self.project_id,
+                                     instance_id=self.instance_id)
         if instance:
             # Based on Instance.__eq__ instance with the same ID and client is
             # considered as equal.
@@ -138,7 +142,7 @@ class BigtableInstanceCreateOperator(BaseOperator, BigtableValidationMixin):
             )
             return
         try:
-            self.hook.create_instance(
+            hook.create_instance(
                 project_id=self.project_id,
                 instance_id=self.instance_id,
                 main_cluster_id=self.main_cluster_id,
@@ -173,26 +177,29 @@ class BigtableInstanceDeleteOperator(BaseOperator, BigtableValidationMixin):
     :param project_id: Optional, the ID of the GCP project.  If set to None or missing,
             the default project_id from the GCP connection is used.
     :type project_id: str
+    :param gcp_conn_id: The connection ID to use to connect to Google Cloud Platform.
+    :type gcp_conn_id: str
     """
-    REQUIRED_ATTRIBUTES = ('instance_id',)
-    template_fields = ['project_id', 'instance_id']
+    REQUIRED_ATTRIBUTES = ('instance_id',)  # type: Iterable[str]
+    template_fields = ['project_id', 'instance_id']  # type: Iterable[str]
 
     @apply_defaults
     def __init__(self,
-                 instance_id,
-                 project_id=None,
-                 gcp_conn_id='google_cloud_default',
-                 *args, **kwargs):
+                 instance_id: str,
+                 project_id: Optional[str] = None,
+                 gcp_conn_id: str = 'google_cloud_default',
+                 *args, **kwargs) -> None:
         self.project_id = project_id
         self.instance_id = instance_id
         self._validate_inputs()
-        self.hook = BigtableHook(gcp_conn_id=gcp_conn_id)
+        self.gcp_conn_id = gcp_conn_id
         super().__init__(*args, **kwargs)
 
     def execute(self, context):
+        hook = BigtableHook(gcp_conn_id=self.gcp_conn_id)
         try:
-            self.hook.delete_instance(project_id=self.project_id,
-                                      instance_id=self.instance_id)
+            hook.delete_instance(project_id=self.project_id,
+                                 instance_id=self.instance_id)
         except google.api_core.exceptions.NotFound:
             self.log.info(
                 "The instance '%s' does not exist in project '%s'. "
@@ -230,32 +237,32 @@ class BigtableTableCreateOperator(BaseOperator, BigtableValidationMixin):
     :param column_families: (Optional) A map columns to create.
                             The key is the column_id str and the value is a
                             :class:`google.cloud.bigtable.column_family.GarbageCollectionRule`
+    :param gcp_conn_id: The connection ID to use to connect to Google Cloud Platform.
+    :type gcp_conn_id: str
     """
-    REQUIRED_ATTRIBUTES = ('instance_id', 'table_id')
-    template_fields = ['project_id', 'instance_id', 'table_id']
+    REQUIRED_ATTRIBUTES = ('instance_id', 'table_id')  # type: Iterable[str]
+    template_fields = ['project_id', 'instance_id', 'table_id']  # type: Iterable[str]
 
     @apply_defaults
     def __init__(self,
-                 instance_id,
-                 table_id,
-                 project_id=None,
-                 initial_split_keys=None,
-                 column_families=None,
-                 gcp_conn_id='google_cloud_default',
-                 *args, **kwargs):
+                 instance_id: str,
+                 table_id: str,
+                 project_id: Optional[str] = None,
+                 initial_split_keys: Optional[List] = None,
+                 column_families: Optional[Dict[str, GarbageCollectionRule]] = None,
+                 gcp_conn_id: str = 'google_cloud_default',
+                 *args, **kwargs) -> None:
         self.project_id = project_id
         self.instance_id = instance_id
         self.table_id = table_id
         self.initial_split_keys = initial_split_keys or list()
         self.column_families = column_families or dict()
         self._validate_inputs()
-        self.hook = BigtableHook(gcp_conn_id=gcp_conn_id)
-        self.instance = None
+        self.gcp_conn_id = gcp_conn_id
         super().__init__(*args, **kwargs)
 
-    def _compare_column_families(self):
-        table_column_families = self.hook.get_column_families_for_table(self.instance,
-                                                                        self.table_id)
+    def _compare_column_families(self, hook, instance):
+        table_column_families = hook.get_column_families_for_table(instance, self.table_id)
         if set(table_column_families.keys()) != set(self.column_families.keys()):
             self.log.error("Table '%s' has different set of Column Families",
                            self.table_id)
@@ -278,21 +285,21 @@ class BigtableTableCreateOperator(BaseOperator, BigtableValidationMixin):
         return True
 
     def execute(self, context):
-        self.instance = self.hook.get_instance(project_id=self.project_id,
-                                               instance_id=self.instance_id)
-        if not self.instance:
+        hook = BigtableHook(gcp_conn_id=self.gcp_conn_id)
+        instance = hook.get_instance(project_id=self.project_id, instance_id=self.instance_id)
+        if not instance:
             raise AirflowException(
                 "Dependency: instance '{}' does not exist in project '{}'.".
                 format(self.instance_id, self.project_id))
         try:
-            self.hook.create_table(
-                instance=self.instance,
+            hook.create_table(
+                instance=instance,
                 table_id=self.table_id,
                 initial_split_keys=self.initial_split_keys,
                 column_families=self.column_families
             )
         except google.api_core.exceptions.AlreadyExists:
-            if not self._compare_column_families():
+            if not self._compare_column_families(hook, instance):
                 raise AirflowException(
                     "Table '{}' already exists with different Column Families.".
                     format(self.table_id))
@@ -320,35 +327,38 @@ class BigtableTableDeleteOperator(BaseOperator, BigtableValidationMixin):
             the default project_id from the GCP connection is used.
     :type app_profile_id: str
     :parm app_profile_id: Application profile.
+    :param gcp_conn_id: The connection ID to use to connect to Google Cloud Platform.
+    :type gcp_conn_id: str
     """
-    REQUIRED_ATTRIBUTES = ('instance_id', 'table_id')
-    template_fields = ['project_id', 'instance_id', 'table_id']
+    REQUIRED_ATTRIBUTES = ('instance_id', 'table_id')  # type: Iterable[str]
+    template_fields = ['project_id', 'instance_id', 'table_id']  # type: Iterable[str]
 
     @apply_defaults
     def __init__(self,
-                 instance_id,
-                 table_id,
-                 project_id=None,
-                 app_profile_id=None,
-                 gcp_conn_id='google_cloud_default',
-                 *args, **kwargs):
+                 instance_id: str,
+                 table_id: str,
+                 project_id: Optional[str] = None,
+                 app_profile_id: Optional[str] = None,
+                 gcp_conn_id: str = 'google_cloud_default',
+                 *args, **kwargs) -> None:
         self.project_id = project_id
         self.instance_id = instance_id
         self.table_id = table_id
         self.app_profile_id = app_profile_id
         self._validate_inputs()
-        self.hook = BigtableHook(gcp_conn_id=gcp_conn_id)
+        self.gcp_conn_id = gcp_conn_id
         super().__init__(*args, **kwargs)
 
     def execute(self, context):
-        instance = self.hook.get_instance(project_id=self.project_id,
-                                          instance_id=self.instance_id)
+        hook = BigtableHook(gcp_conn_id=self.gcp_conn_id)
+        instance = hook.get_instance(project_id=self.project_id,
+                                     instance_id=self.instance_id)
         if not instance:
             raise AirflowException("Dependency: instance '{}' does not exist.".format(
                 self.instance_id))
 
         try:
-            self.hook.delete_table(
+            hook.delete_table(
                 project_id=self.project_id,
                 instance_id=self.instance_id,
                 table_id=self.table_id,
@@ -382,35 +392,38 @@ class BigtableClusterUpdateOperator(BaseOperator, BigtableValidationMixin):
     :param nodes: The desired number of nodes for the Cloud Bigtable cluster.
     :type project_id: str
     :param project_id: Optional, the ID of the GCP project.
+    :param gcp_conn_id: The connection ID to use to connect to Google Cloud Platform.
+    :type gcp_conn_id: str
     """
-    REQUIRED_ATTRIBUTES = ('instance_id', 'cluster_id', 'nodes')
-    template_fields = ['project_id', 'instance_id', 'cluster_id', 'nodes']
+    REQUIRED_ATTRIBUTES = ('instance_id', 'cluster_id', 'nodes')  # type: Iterable[str]
+    template_fields = ['project_id', 'instance_id', 'cluster_id', 'nodes']  # type: Iterable[str]
 
     @apply_defaults
     def __init__(self,
-                 instance_id,
-                 cluster_id,
-                 nodes,
-                 project_id=None,
-                 gcp_conn_id='google_cloud_default',
-                 *args, **kwargs):
+                 instance_id: str,
+                 cluster_id: str,
+                 nodes: str,
+                 project_id: Optional[str] = None,
+                 gcp_conn_id: str = 'google_cloud_default',
+                 *args, **kwargs) -> None:
         self.project_id = project_id
         self.instance_id = instance_id
         self.cluster_id = cluster_id
         self.nodes = nodes
         self._validate_inputs()
-        self.hook = BigtableHook(gcp_conn_id=gcp_conn_id)
+        self.gcp_conn_id = gcp_conn_id
         super().__init__(*args, **kwargs)
 
     def execute(self, context):
-        instance = self.hook.get_instance(project_id=self.project_id,
-                                          instance_id=self.instance_id)
+        hook = BigtableHook(gcp_conn_id=self.gcp_conn_id)
+        instance = hook.get_instance(project_id=self.project_id,
+                                     instance_id=self.instance_id)
         if not instance:
             raise AirflowException("Dependency: instance '{}' does not exist.".format(
                 self.instance_id))
 
         try:
-            self.hook.update_cluster(
+            hook.update_cluster(
                 instance=instance,
                 cluster_id=self.cluster_id,
                 nodes=self.nodes

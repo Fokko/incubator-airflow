@@ -27,6 +27,9 @@ from airflow.exceptions import AirflowException
 from airflow.utils.log.logging_mixin import LoggingMixin
 from airflow.kubernetes import kube_client
 
+KUBERNETES_SERVICE_HOST = 'KUBERNETES_SERVICE_HOST'
+KUBERNETES_SERVICE_PORT = 'KUBERNETES_SERVICE_PORT'
+
 
 class SparkSubmitHook(BaseHook, LoggingMixin):
     """
@@ -93,6 +96,7 @@ class SparkSubmitHook(BaseHook, LoggingMixin):
                          Some distros may use spark2-submit.
     :type spark_binary: str
     """
+
     def __init__(self,
                  conf=None,
                  conn_id='spark_default',
@@ -181,18 +185,24 @@ class SparkSubmitHook(BaseHook, LoggingMixin):
             # Master can be local, yarn, spark://HOST:PORT, mesos://HOST:PORT and
             # k8s://https://<HOST>:<PORT>
             conn = self.get_connection(self._conn_id)
-            if conn.port:
-                conn_data['master'] = "{}:{}".format(conn.host, conn.port)
-            else:
-                conn_data['master'] = conn.host
+            if conn.host:
+                if conn.port:
+                    conn_data['master'] = "{}:{}".format(conn.host, conn.port)
+                else:
+                    conn_data['master'] = conn.host
+            elif KUBERNETES_SERVICE_HOST in os.environ and KUBERNETES_SERVICE_PORT in os.environ:
+                conn_data['master'] = "k8s://https://{}:{}".format(
+                    os.environ[KUBERNETES_SERVICE_HOST],
+                    os.environ[KUBERNETES_SERVICE_PORT],
+                )
 
             # Determine optional yarn queue from the extra field
             extra = conn.extra_dejson
             conn_data['queue'] = extra.get('queue', None)
             conn_data['deploy_mode'] = extra.get('deploy-mode', None)
             conn_data['spark_home'] = extra.get('spark-home', None)
-            conn_data['spark_binary'] = self._spark_binary or  \
-                extra.get('spark-binary', "spark-submit")
+            conn_data['spark_binary'] = self._spark_binary or \
+                                        extra.get('spark-binary', "spark-submit")
             conn_data['namespace'] = extra.get('namespace', 'default')
         except AirflowException:
             self.log.info(
@@ -379,7 +389,7 @@ class SparkSubmitHook(BaseHook, LoggingMixin):
             if self._driver_status != "FINISHED":
                 raise AirflowException(
                     "ERROR : Driver {} badly exited with status {}"
-                    .format(self._driver_id, self._driver_status)
+                        .format(self._driver_id, self._driver_status)
                 )
 
     def _process_spark_submit_log(self, itr):
@@ -511,7 +521,7 @@ class SparkSubmitHook(BaseHook, LoggingMixin):
                 else:
                     raise AirflowException(
                         "Failed to poll for the driver status {} times: returncode = {}"
-                        .format(max_missed_job_status_reports, returncode)
+                            .format(max_missed_job_status_reports, returncode)
                     )
 
     def _build_spark_driver_kill_command(self):

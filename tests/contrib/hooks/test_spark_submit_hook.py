@@ -18,14 +18,16 @@
 # under the License.
 
 import io
+import os
 import unittest
+from unittest import mock
 
 from airflow import AirflowException
 from airflow.models import Connection
 from airflow.utils import db
 from unittest.mock import patch, call
 
-from airflow.contrib.hooks.spark_submit_hook import SparkSubmitHook
+from airflow.contrib.hooks.spark_submit_hook import SparkSubmitHook, KUBERNETES_SERVICE_HOST, KUBERNETES_SERVICE_PORT
 
 
 class TestSparkSubmitHook(unittest.TestCase):
@@ -85,6 +87,12 @@ class TestSparkSubmitHook(unittest.TestCase):
                 extra='{"spark-home": "/opt/spark", ' +
                       '"deploy-mode": "cluster", ' +
                       '"namespace": "mynamespace"}')
+        )
+        db.merge_conn(
+            Connection(
+                conn_id='spark_k8s_empty', conn_type='spark',
+                host=''
+            )
         )
         db.merge_conn(
             Connection(
@@ -501,6 +509,24 @@ class TestSparkSubmitHook(unittest.TestCase):
 
         # Then
         self.assertEqual(cmd[4], "spark.kubernetes.driverEnv.bar=foo")
+
+    @mock.patch.dict(os.environ, {KUBERNETES_SERVICE_HOST: '10.0.19.25', KUBERNETES_SERVICE_PORT: '1925'})
+    def test_resolve_spark_submit_k8s_in_cluster(self):
+        # Given
+        hook = SparkSubmitHook(conn_id='spark_k8s_empty')
+
+        # When
+        connection = hook._resolve_connection()
+        cmd = hook._build_spark_submit_command(self._spark_job_file)
+
+        # Then
+        expected_spark_connection = {"master": "k8s://https://10.0.19.25:1925",
+                                     "spark_binary": "spark-submit",
+                                     "deploy_mode": None,
+                                     "queue": None,
+                                     "spark_home": None,
+                                     "namespace": 'default'}
+        self.assertEqual(connection, expected_spark_connection)
 
     def test_process_spark_submit_log_yarn(self):
         # Given

@@ -197,9 +197,7 @@ def initdb():
             conn_id='aws_default', conn_type='aws',
             extra='{"region_name": "us-east-1"}'))
     merge_conn(
-        Connection(
-            conn_id='spark_default', conn_type='spark',
-            host='yarn', extra='{"queue": "root.default"}'))
+        Connection(conn_id='spark_default', conn_type='spark'))
     merge_conn(
         Connection(
             conn_id='druid_broker_default', conn_type='druid',

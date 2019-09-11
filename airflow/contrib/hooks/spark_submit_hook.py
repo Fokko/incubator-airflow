@@ -201,8 +201,7 @@ class SparkSubmitHook(BaseHook, LoggingMixin):
             conn_data['queue'] = extra.get('queue', None)
             conn_data['deploy_mode'] = extra.get('deploy-mode', None)
             conn_data['spark_home'] = extra.get('spark-home', None)
-            conn_data['spark_binary'] = self._spark_binary or \
-                                        extra.get('spark-binary', "spark-submit")
+            conn_data['spark_binary'] = self._spark_binary or extra.get('spark-binary', "spark-submit")
             conn_data['namespace'] = extra.get('namespace', 'default')
         except AirflowException:
             self.log.info(
@@ -388,8 +387,8 @@ class SparkSubmitHook(BaseHook, LoggingMixin):
 
             if self._driver_status != "FINISHED":
                 raise AirflowException(
-                    "ERROR : Driver {} badly exited with status {}"
-                        .format(self._driver_id, self._driver_status)
+                    "ERROR : Driver {} badly exited with status {}".format(
+                        self._driver_id, self._driver_status)
                 )
 
     def _process_spark_submit_log(self, itr):
@@ -520,8 +519,8 @@ class SparkSubmitHook(BaseHook, LoggingMixin):
                     missed_job_status_reports = missed_job_status_reports + 1
                 else:
                     raise AirflowException(
-                        "Failed to poll for the driver status {} times: returncode = {}"
-                            .format(max_missed_job_status_reports, returncode)
+                        "Failed to poll for the driver status {} times: returncode = {}".format(
+                            max_missed_job_status_reports, returncode)
                     )
 
     def _build_spark_driver_kill_command(self):

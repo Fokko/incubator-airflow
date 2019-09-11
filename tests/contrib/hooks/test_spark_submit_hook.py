@@ -27,7 +27,8 @@ from airflow.models import Connection
 from airflow.utils import db
 from unittest.mock import patch, call
 
-from airflow.contrib.hooks.spark_submit_hook import SparkSubmitHook, KUBERNETES_SERVICE_HOST, KUBERNETES_SERVICE_PORT
+from airflow.contrib.hooks.spark_submit_hook import SparkSubmitHook, \
+    KUBERNETES_SERVICE_HOST, KUBERNETES_SERVICE_PORT
 
 
 class TestSparkSubmitHook(unittest.TestCase):
@@ -517,7 +518,6 @@ class TestSparkSubmitHook(unittest.TestCase):
 
         # When
         connection = hook._resolve_connection()
-        cmd = hook._build_spark_submit_command(self._spark_job_file)
 
         # Then
         expected_spark_connection = {"master": "k8s://https://10.0.19.25:1925",

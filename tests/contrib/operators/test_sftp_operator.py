@@ -74,7 +74,6 @@ class TestSFTPOperator(unittest.TestCase):
         self.test_remote_filepath_int_dir = '{0}/{1}'.format(self.test_remote_dir,
                                                              self.test_remote_filename)
 
-    @conf_vars({('core', 'enable_xcom_pickling'): 'True'})
     def test_pickle_file_transfer_put(self):
         test_local_file_content = \
             b"This is local file content \n which is multiline " \
@@ -112,7 +111,6 @@ class TestSFTPOperator(unittest.TestCase):
             ti3.xcom_pull(task_ids='test_check_file', key='return_value').strip(),
             test_local_file_content)
 
-    @conf_vars({('core', 'enable_xcom_pickling'): 'True'})
     def test_file_transfer_no_intermediate_dir_error_put(self):
         test_local_file_content = \
             b"This is local file content \n which is multiline " \
@@ -139,7 +137,6 @@ class TestSFTPOperator(unittest.TestCase):
             ti2.run()
         self.assertIn('No such file', str(error.exception))
 
-    @conf_vars({('core', 'enable_xcom_pickling'): 'True'})
     def test_file_transfer_with_intermediate_dir_put(self):
         test_local_file_content = \
             b"This is local file content \n which is multiline " \
@@ -177,7 +174,6 @@ class TestSFTPOperator(unittest.TestCase):
             ti3.xcom_pull(task_ids='test_check_file', key='return_value').strip(),
             test_local_file_content)
 
-    @conf_vars({('core', 'enable_xcom_pickling'): 'False'})
     def test_json_file_transfer_put(self):
         test_local_file_content = \
             b"This is local file content \n which is multiline " \
@@ -214,7 +210,6 @@ class TestSFTPOperator(unittest.TestCase):
             ti3.xcom_pull(task_ids='test_check_file', key='return_value').strip(),
             b64encode(test_local_file_content).decode('utf-8'))
 
-    @conf_vars({('core', 'enable_xcom_pickling'): 'True'})
     def test_pickle_file_transfer_get(self):
         test_remote_file_content = \
             "This is remote file content \n which is also multiline " \
@@ -252,7 +247,6 @@ class TestSFTPOperator(unittest.TestCase):
             content_received = file.read()
         self.assertEqual(content_received.strip(), test_remote_file_content)
 
-    @conf_vars({('core', 'enable_xcom_pickling'): 'False'})
     def test_json_file_transfer_get(self):
         test_remote_file_content = \
             "This is remote file content \n which is also multiline " \
@@ -291,7 +285,6 @@ class TestSFTPOperator(unittest.TestCase):
         self.assertEqual(content_received.strip(),
                          test_remote_file_content.encode('utf-8').decode('utf-8'))
 
-    @conf_vars({('core', 'enable_xcom_pickling'): 'True'})
     def test_file_transfer_no_intermediate_dir_error_get(self):
         test_remote_file_content = \
             "This is remote file content \n which is also multiline " \
@@ -327,7 +320,6 @@ class TestSFTPOperator(unittest.TestCase):
             ti2.run()
         self.assertIn('No such file', str(error.exception))
 
-    @conf_vars({('core', 'enable_xcom_pickling'): 'True'})
     def test_file_transfer_with_intermediate_dir_error_get(self):
         test_remote_file_content = \
             "This is remote file content \n which is also multiline " \

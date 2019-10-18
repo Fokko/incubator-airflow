@@ -123,14 +123,7 @@ class WinRMOperator(BaseOperator):
             raise AirflowException("WinRM operator error: {0}".format(str(e)))
 
         if return_code == 0:
-            # returning output if do_xcom_push is set
-            enable_pickling = conf.getboolean(
-                'core', 'enable_xcom_pickling'
-            )
-            if enable_pickling:
-                return stdout_buffer
-            else:
-                return b64encode(b''.join(stdout_buffer)).decode('utf-8')
+            return b64encode(b''.join(stdout_buffer)).decode('utf-8')
         else:
             error_msg = "Error running cmd: {0}, return code: {1}, error: {2}".format(
                 self.command,

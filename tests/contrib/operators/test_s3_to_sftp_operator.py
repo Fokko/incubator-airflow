@@ -87,7 +87,6 @@ class TestS3ToSFTPOperator(unittest.TestCase):
     @mock_s3
     def test_s3_to_sftp_operation(self):
         # Setting
-        conf.set("core", "enable_xcom_pickling", "True")
         test_remote_file_content = \
             "This is remote file content \n which is also multiline " \
             "another line here \n this is last line. EOF"

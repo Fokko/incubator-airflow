@@ -152,14 +152,7 @@ class SSHOperator(BaseOperator):
 
                 exit_status = stdout.channel.recv_exit_status()
                 if exit_status == 0:
-                    enable_pickling = conf.getboolean(
-                        'core', 'enable_xcom_pickling'
-                    )
-                    if enable_pickling:
-                        return agg_stdout
-                    else:
-                        return b64encode(agg_stdout).decode('utf-8')
-
+                    return b64encode(agg_stdout).decode('utf-8')
                 else:
                     error_msg = agg_stderr.decode('utf-8')
                     raise AirflowException("error running cmd: {0}, error: {1}"

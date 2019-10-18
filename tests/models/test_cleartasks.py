@@ -240,8 +240,6 @@ class TestClearTasks(unittest.TestCase):
         dag_id = "test_dag1"
         task_id = "test_task1"
 
-        conf.set("core", "enable_xcom_pickling", "False")
-
         XCom.set(key=key,
                  value=json_obj,
                  dag_id=dag_id,
@@ -269,8 +267,6 @@ class TestClearTasks(unittest.TestCase):
         key = "xcom_test2"
         dag_id = "test_dag2"
         task_id = "test_task2"
-
-        conf.set("core", "enable_xcom_pickling", "True")
 
         XCom.set(key=key,
                  value=json_obj,

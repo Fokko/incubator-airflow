@@ -74,7 +74,6 @@ class TestSSHOperator(unittest.TestCase):
         self.assertEqual(TIMEOUT, task.ssh_hook.timeout)
         self.assertEqual(SSH_ID, task.ssh_hook.ssh_conn_id)
 
-    @conf_vars({('core', 'enable_xcom_pickling'): 'False'})
     def test_json_command_execution(self):
         task = SSHOperator(
             task_id="test",
@@ -93,7 +92,6 @@ class TestSSHOperator(unittest.TestCase):
         self.assertEqual(ti.xcom_pull(task_ids='test', key='return_value'),
                          b64encode(b'airflow').decode('utf-8'))
 
-    @conf_vars({('core', 'enable_xcom_pickling'): 'True'})
     def test_pickle_command_execution(self):
         task = SSHOperator(
             task_id="test",
@@ -123,12 +121,10 @@ class TestSSHOperator(unittest.TestCase):
 
         self.assertIsNotNone(task)
 
-        with conf_vars({('core', 'enable_xcom_pickling'): 'True'}):
-            ti = TaskInstance(
-                task=task, execution_date=timezone.utcnow())
-            ti.run()
-            self.assertIsNotNone(ti.duration)
-            self.assertEqual(ti.xcom_pull(task_ids='test', key='return_value'), b'airflow')
+        ti = TaskInstance(task=task, execution_date=timezone.utcnow())
+        ti.run()
+        self.assertIsNotNone(ti.duration)
+        self.assertEqual(ti.xcom_pull(task_ids='test', key='return_value'), b'airflow')
 
     def test_no_output_command(self):
         task = SSHOperator(
@@ -141,12 +137,11 @@ class TestSSHOperator(unittest.TestCase):
 
         self.assertIsNotNone(task)
 
-        with conf_vars({('core', 'enable_xcom_pickling'): 'True'}):
-            ti = TaskInstance(
-                task=task, execution_date=timezone.utcnow())
-            ti.run()
-            self.assertIsNotNone(ti.duration)
-            self.assertEqual(ti.xcom_pull(task_ids='test', key='return_value'), b'')
+        ti = TaskInstance(
+            task=task, execution_date=timezone.utcnow())
+        ti.run()
+        self.assertIsNotNone(ti.duration)
+        self.assertEqual(ti.xcom_pull(task_ids='test', key='return_value'), b'')
 
     def test_arg_checking(self):
         import os
